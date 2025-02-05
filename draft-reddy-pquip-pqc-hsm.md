@@ -93,13 +93,13 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, and {{REC-KEM}} guidelines:
 
    If the seed is not securely stored at the time of key generation, it is permanently lost because the process of deriving an expanded key from the seed relies on a one-way cryptographic function. This one-way function is designed to ensure that the expanded private key can be deterministically derived from the seed, but the reverse operation, deriving the original seed from the expanded key is computationally infeasible.
 
-3. **Efficient Key Derivation**
+2. **Efficient Key Derivation**
    When storing only the seed in an HSM, it is crucial that the HSM is capable of deriving the private key efficiently whenever required. The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must be implemented in such a way that it can operate quickly and securely within the resource constraints of the HSM. The derived private key should only be kept in memory temporarily during the cryptographic operation and discarded immediately after use.
 
-2. **Secure Exporting of Seeds**  
-   Given the potential for hardware failures or the end-of-life of cryptographic devices, it is essential to plan for backup and recovery of the cryptographic seeds. HSMs should support secure seed backup mechanisms, ideally leveraging encrypted storage and ensuring that the backup data is protected from unauthorized access. In a disaster recovery scenario, the seed should be recoverable to enable the re-derivation of the private key, provided the proper security measures are in place to prevent unauthorized extraction. Secure exporting of seeds from one cryptographic module to another (e.g., during device migration) is permitted if performed through a trusted and secure process. 
-   This process should include:  
-   - Encrypting the seed using a strong, approved algorithm before export.  
+3. **Secure Exporting of Seeds**  
+   Given the potential for hardware failures or the end-of-life of cryptographic devices, it is essential to plan for backup and recovery of the cryptographic seeds. HSMs should support secure seed backup mechanisms, ideally leveraging encrypted storage and ensuring that the backup data is protected from unauthorized access. In a disaster recovery scenario, the seed should be recoverable to enable the re-derivation of the private key, provided the proper security measures are in place to prevent unauthorized extraction. 
+   For secure exporting of seeds, PQC encryption algorithms, such as ML-KEM, should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks. The process for secure export should include:
+   - Encrypting the seed using a strong, approved PQC encryption algorithm before export.  
    - Ensuring the exported seed is accessible only to authorized entities.  
    - Enforcing strict access controls and secure transport mechanisms to prevent unauthorized access during transfer.
 
@@ -122,15 +122,38 @@ HSMs implementing PQC ephemeral key management will have to:
 
 When implementing PQC signature algorithms in hardware devices, such as Hardware Security Modules (HSMs), performance optimization becomes a critical consideration. Transmitting the entire message to the HSM for signing can lead to significant overhead, especially for large payloads. To address this, implementers can leverage techniques that reduce the data transmitted to the HSM, thereby improving efficiency and scalability.
 
-One effective approach involves sending only a message digest to the HSM for signing. By signing the digest of the content rather than the entire content, the communication between the application and the HSM is minimized, enabling better performance.
+One effective approach involves sending only a message digest to the HSM for signing. By signing the digest of the content rather than the entire content, the communication between the application and the HSM is minimized, enabling better performance. This method is applicable for any PQC signature algorithm, whether it is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is often provided to pre-hash or process the message in a way that avoids sending the entire raw message for signing. In particular, algorithms like ML-DSA present challenges due to their construction, which requires the signer to hold the complete message in memory because multiple passes through the message are necessary during the signing process. This differs from traditional algorithms like RSA or ECDSA, which do not require the entire message to be stored in memory during signing, as their constructions allow for more efficient, sequential processing.
 
-This method is applicable for any PQC signature algorithm, whether it is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is often provided to pre-hash or process the message in a way that avoids sending the entire raw message for signing. In particular, algorithms like ML-DSA offer a form of pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}. The mu value provides an abstraction for pre-hashing by allowing the hash or message representative to be computed outside the HSM. This feature offers additional flexibility by enabling the use of different cryptographic modules for the pre-hashing step. The pre-computed mu value is then supplied to the HSM, eliminating the need to transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}} discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step (ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the pre-hashed message (mu) is sent to the HSM for signing (ExternalMu-ML-DSA.Sign). 
+To address this challenge, algorithms like ML-DSA offer a form of pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}. The mu value provides an abstraction for pre-hashing by allowing the hash or message representative to be computed outside the HSM. This feature offers additional flexibility by enabling the use of different cryptographic modules for the pre-hashing step. The pre-computed mu value is then supplied to the HSM, eliminating the need to transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}} discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step (ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the pre-hashed message (mu) is sent to the HSM for signing (ExternalMu-ML-DSA.Sign). 
 By implementing ExternalMu-ML-DSA.Prehash in software and ExternalMu-ML-DSA.Sign in an HSM, the cryptographic workload is efficiently distributed, making it practical for high-volume signing operations.
 
 # Additional Considerations for HSM Use in PQC
 
 * Key Rotation and Renewal: In an environment where the key material may need to be updated or rotated regularly (such as for compliance or 
   cryptographic agility), the HSM should provide mechanisms to rotate keys securely. This could involve generating new key pairs, securely storing the new seeds, and securely deleting outdated keys.
+
+# Quantum-Safe Firmware Upgrades for HSMs
+
+HSMs deployed in the field require periodic firmware upgrades to patch security vulnerabilities, introduce new cryptographic algorithms, and improve overall functionality. However, the firmware upgrade process itself can become a critical attack vector if not designed to be quantum-safe. If an adversary compromises the update mechanism, they could introduce malicious firmware, undermining all other security properties of the HSM. Therefore, ensuring a quantum-safe firmware upgrade process is critical for the security of deployed HSMs.
+
+CRQCs pose an additional risk by breaking traditional digital signatures (e.g., RSA, ECDSA) used to authenticate firmware updates. If firmware verification relies on traditional signature algorithms, attackers could generate forged signatures in the future and distribute malicious updates.
+
+## Quantum-Safe Firmware Authentication
+
+To ensure the integrity and authenticity of firmware updates, HSM vendors will have to adopt PQC digital signature schemes for code signing. Recommended post-quantum algorithms include:
+
+SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures.
+
+HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing long-term security and efficient key management for firmware authentication (see https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf).
+
+Firmware images can be signed using one of these quantum-resistant algorithms before being distributed to HSMs.
+
+# Key Management and Quantum-Safe Authorization
+In a post-quantum world, ensuring the secure authorization of PQC private keys stored in HSMs is crucial. This process should involve both explicit and implicit authorization mechanisms:
+
+1. Explicit Authorization: When an actor requests access to a PQC private key, the authorization process should be protected using quantum-safe techniques. This could involve utilizing PQC digital signatures to sign authorization requests, ensuring the integrity of the request against quantum adversaries. The HSM should verify the authorization, ensuring that only trusted parties can access the key.
+
+2. Implicit Authorization (Session Management): Implicit authorization refers to scenarios where access to PQC private key is granted indirectly, typically by establishing a session or opening a secure partition where the keys can be used for specific operations over a defined period. This method helps streamline operations by reducing the need for constant reauthorization, while still ensuring quantum-safe security. For instance, when an actor requires access to a PQC private key, it initiates a session request, which can be authenticated using a PQC digital signature. Once verified, the HSM grants access for the duration of the session, allowing the actor to perform operations without needing further explicit authorization.
 
 # Security Considerations
 
