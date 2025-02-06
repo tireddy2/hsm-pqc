@@ -47,9 +47,9 @@ informative:
      title: "FIPS-204: Module-Lattice-Based Digital Signature Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf
      date: false
-  SLH-DSA:
-     title: "FIPS-205: Stateless Hash-Based Digital Signature Standard"
-     target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf 
+  REC-SHS:
+     title: "Recommendation for Stateful Hash-Based Signature Scheme"
+     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf 
      date: false
   BIND:
     title: Unbindable Kemmy Schmid
@@ -92,6 +92,8 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, and {{REC-KEM}} guidelines:
    A significant advantage of this approach is that seeds require much less storage than private keys, which is especially important in Hardware Security Modules (HSMs), as they are typically resource-constrained devices. This limitation becomes even more critical with post-quantum cryptography (PQC) algorithms, where private keys can be exceptionally large. By storing only the seed and deriving the private key as needed, HSMs can significantly reduce storage overhead, making this approach highly efficient for scaling operations across multiple key pairs while adhering to the constraints of these devices.
 
    If the seed is not securely stored at the time of key generation, it is permanently lost because the process of deriving an expanded key from the seed relies on a one-way cryptographic function. This one-way function is designed to ensure that the expanded private key can be deterministically derived from the seed, but the reverse operation, deriving the original seed from the expanded key is computationally infeasible.
+
+   However, this seed-based approach introduces trade-offs in performance, as key derivation incurs additional computation. While HSMs already employ optimized key storage mechanisms, implementations should carefully balance security and efficiency when managing PQC private keys.
 
 2. **Efficient Key Derivation**
    When storing only the seed in an HSM, it is crucial that the HSM is capable of deriving the private key efficiently whenever required. The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must be implemented in such a way that it can operate quickly and securely within the resource constraints of the HSM. The derived private key should only be kept in memory temporarily during the cryptographic operation and discarded immediately after use.
@@ -144,7 +146,7 @@ To ensure the integrity and authenticity of firmware updates, HSM vendors will h
 
 SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures.
 
-HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing long-term security and efficient key management for firmware authentication (see https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf).
+HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
 
 Firmware images can be signed using one of these quantum-resistant algorithms before being distributed to HSMs.
 
