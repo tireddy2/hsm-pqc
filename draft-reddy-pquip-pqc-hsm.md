@@ -54,6 +54,10 @@ informative:
   BIND:
     title: Unbindable Kemmy Schmid
     target: https://eprint.iacr.org/2024/523.pdf 
+  SLH-DSA:
+     title: "FIPS-205: Stateless Hash-Based Digital Signature Standard"
+     target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf
+     date: false
   REC-KEM:
     title: Recommendations for Key-Encapsulation Mechanisms
     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-227.ipd.pdf 
@@ -78,7 +82,7 @@ Hardware Security Modules are resource-constrained devices, particularly when de
 
 The seed generated during the PQC key generation function is highly sensitive, as it will be used to compute the private key or decapsulation key. Consequently, seeds must be treated with the same level of security as private keys.
 
-To comply with {{ML-KEM}}, {{ML-DSA}}, and {{REC-KEM}} guidelines:
+To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
 1. **Seed Storage**  
    Seeds must be securely stored within a cryptographic module, such as a Hardware Security Module (HSM), to ensure protection against unauthorized access. Since the seed can be used to compute the private key, it must be safeguarded with the same level of protection as the private key itself. For example, according to {{ML-DSA}} Section 3.6.3, the seed `ξ` generated during `ML-DSA.KeyGen` can be stored for later expansion using `ML-DSA.KeyGen_internal`.
@@ -111,9 +115,9 @@ Wherever possible, seed generation, storage, and usage should remain entirely wi
 
 In protocols like TLS and IPsec, ephemeral keys are used for key exchange. Given the increased size of PQC key material, ephemeral key management will have to be optimized for both security and performance.
 
-For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, which is securely stored temporarily and erased after use. This approach ensures that ephemeral key generation is deterministic and minimizes storage overhead in HSMs, as only the seed (not the full private key) needs to be stored. The ephemeral seed must be securely erased immediately after the key pair is generated to prevent potential leakage or misuse.
+For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, which needs to be securely stored temporarily and erased after use. This approach ensures that ephemeral key generation is deterministic and minimizes storage overhead in HSMs, as only the seed (not the full private key) needs to be stored. The ephemeral seed must be securely erased immediately after the key pair is generated to prevent potential leakage or misuse.
 
-Additionally, ephemeral keys must not be reused across different algorithm suites and sessions. Each ephemeral key-pair must be uniquely associated with a specific key exchange instance to prevent cryptographic vulnerabilities, such as cross-protocol attacks or unintended key reuse.
+Additionally, ephemeral keys should not be reused across different algorithm suites and sessions. Each ephemeral key-pair must be uniquely associated with a specific key exchange instance to prevent cryptographic vulnerabilities, such as cross-protocol attacks or unintended key reuse.
 
 HSMs implementing PQC ephemeral key management will have to:
 * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
@@ -124,7 +128,7 @@ HSMs implementing PQC ephemeral key management will have to:
 
 When implementing PQC signature algorithms in hardware devices, such as Hardware Security Modules (HSMs), performance optimization becomes a critical consideration. Transmitting the entire message to the HSM for signing can lead to significant overhead, especially for large payloads. To address this, implementers can leverage techniques that reduce the data transmitted to the HSM, thereby improving efficiency and scalability.
 
-One effective approach involves sending only a message digest to the HSM for signing. By signing the digest of the content rather than the entire content, the communication between the application and the HSM is minimized, enabling better performance. This method is applicable for any PQC signature algorithm, whether it is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is often provided to pre-hash or process the message in a way that avoids sending the entire raw message for signing. In particular, algorithms like ML-DSA present challenges due to their construction, which requires the signer to hold the complete message in memory because multiple passes through the message are necessary during the signing process. This differs from traditional algorithms like RSA or ECDSA, which do not require the entire message to be stored in memory during signing, as their constructions allow for more efficient, sequential processing.
+One effective approach involves sending only a message digest to the HSM for signing. By signing the digest of the content rather than the entire content, the communication between the application and the HSM is minimized, enabling better performance. This method is applicable for any PQC signature algorithm, whether it is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is often provided to pre-hash or process the message in a way that avoids sending the entire raw message for signing. In particular, algorithms like SLH-DSA present challenges due to their construction, which requires multiple passes over the message digest during the signing process. The signer does not retain the entire message or its full digest in memory at once. Instead, different parts of the message digest are processed sequentially during the signing procedure. This differs from traditional algorithms like RSA or ECDSA, which allow for more efficient processing of the message, without requiring multiple passes or intermediate processing of the digest.
 
 To address this challenge, algorithms like ML-DSA offer a form of pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}. The mu value provides an abstraction for pre-hashing by allowing the hash or message representative to be computed outside the HSM. This feature offers additional flexibility by enabling the use of different cryptographic modules for the pre-hashing step. The pre-computed mu value is then supplied to the HSM, eliminating the need to transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}} discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step (ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the pre-hashed message (mu) is sent to the HSM for signing (ExternalMu-ML-DSA.Sign). 
 By implementing ExternalMu-ML-DSA.Prehash in software and ExternalMu-ML-DSA.Sign in an HSM, the cryptographic workload is efficiently distributed, making it practical for high-volume signing operations.
