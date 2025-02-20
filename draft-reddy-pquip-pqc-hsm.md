@@ -38,7 +38,8 @@ author:
 normative:
 
 informative:
-
+  RFC8554:
+  RFC8391:
   ML-KEM:
      title: "FIPS-203: Module-Lattice-based Key-Encapsulation Mechanism Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
@@ -154,6 +155,9 @@ SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not int
 
 HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
 
+XMSS (eXtended Merkle Signature Scheme): Another stateful hash-based signature scheme similar to HSS-LMS {{RFC8391}}. XMSS signatures are slightly shorter than HSS-LMS signatures for equivalent security. However, HSS-LMS provides performance advantages and HSS-LMS is considered
+simpler (see Section 10 of {{RFC8554}}).
+
 Firmware images can be signed using one of these quantum-resistant algorithms before being distributed to HSMs.
 
 # Key Management and Quantum-Safe Authorization
@@ -173,4 +177,4 @@ Side-channel attacks exploit physical leaks during cryptographic operations, suc
 # Acknowledgements
 {:numbered="false"}
 
-TODO
+Thanks to Aritra Banerjee for the detailed review.
