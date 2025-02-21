@@ -4,12 +4,12 @@
 
 PQUIP                                                           T. Reddy
 Internet-Draft                                                     Nokia
-Intended status: Informational                          18 February 2025
-Expires: 22 August 2025
+Intended status: Informational                          20 February 2025
+Expires: 24 August 2025
 
 
               Adapting HSMs for Post-Quantum Cryptography
-                    draft-ietf-pquip-pqc-hsm-latest
+                    draft-reddy-pquip-pqc-hsm-latest
 
 Abstract
 
@@ -26,7 +26,7 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    Status information for this document may be found at
-   https://datatracker.ietf.org/doc/draft-ietf-pquip-pqc-hsm/.
+   https://datatracker.ietf.org/doc/draft-reddy-pquip-pqc-hsm/.
 
    Discussion of this document takes place on the pquip Working Group
    mailing list (mailto:pqc@ietf.org), which is archived at
@@ -48,15 +48,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 22 August 2025.
-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 1]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
+   This Internet-Draft will expire on 24 August 2025.
 
 Copyright Notice
 
@@ -74,23 +66,23 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Key Management in HSMs for PQC  . . . . . . . . . . . . . . .   3
-     2.1.  Seed Management . . . . . . . . . . . . . . . . . . . . .   3
-   3.  Ephemeral Key Management  . . . . . . . . . . . . . . . . . .   6
+   1.  Introduction
+   2.  Key Management in HSMs for PQC
+     2.1.  Seed Management
+   3.  Ephemeral Key Management
    4.  Optimizing Performance in Hardware Implementations of PQC
-           Signature Algorithms  . . . . . . . . . . . . . . . . . .   7
-   5.  Additional Considerations for HSM Use in PQC  . . . . . . . .   8
-   6.  Quantum-Safe Firmware Upgrades for HSMs . . . . . . . . . . .   8
-     6.1.  Quantum-Safe Firmware Authentication  . . . . . . . . . .   9
-   7.  Key Management and Quantum-Safe Authorization . . . . . . . .   9
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  10
-     8.1.  Side Channel Protection . . . . . . . . . . . . . . . . .  10
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  10
-   References  . . . . . . . . . . . . . . . . . . . . . . . . . . .  10
-     Normative References  . . . . . . . . . . . . . . . . . . . . .  10
-     Informative References  . . . . . . . . . . . . . . . . . . . .  11
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  12
+           Signature Algorithms
+   5.  Additional Considerations for HSM Use in PQC
+   6.  Quantum-Safe Firmware Upgrades for HSMs
+     6.1.  Quantum-Safe Firmware Authentication
+   7.  Key Management and Quantum-Safe Authorization
+   8.  Security Considerations
+     8.1.  Side Channel Protection
+   Acknowledgements
+   References
+     Normative References
+     Informative References
+   Author's Address
 
 1.  Introduction
 
@@ -105,14 +97,6 @@ Table of Contents
    sizes while ensuring the security of cryptographic operations.  This
    draft explores strategies for optimizing HSM performance and security
    in the context of PQC.
-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 2]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
 
    This document focuses on the use of PQC algorithms in HSMs,
    specifically the three algorithms finalized by NIST: ML-DSA, ML-KEM,
@@ -151,24 +135,14 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
    To comply with [ML-KEM], [ML-DSA], [SLH-DSA] and [REC-KEM]
    guidelines:
 
-   1.  *Seed Storage*
-       Seeds must be securely stored within a cryptographic module, such
-       as a Hardware Security Module (HSM), to ensure protection against
-       unauthorized access.  Since the seed can be used to compute the
-       private key, it must be safeguarded with the same level of
-       protection as the private key itself.  For example, according to
-       [ML-DSA] Section 3.6.3, the seed ξ generated during ML-DSA.KeyGen
-       can be stored for later expansion using ML-DSA.KeyGen_internal.
-
-
-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 3]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
+   1.  *Seed Storage* Seeds must be securely stored within a
+       cryptographic module, such as a Hardware Security Module (HSM),
+       to ensure protection against unauthorized access.  Since the seed
+       can be used to compute the private key, it must be safeguarded
+       with the same level of protection as the private key itself.  For
+       example, according to [ML-DSA] Section 3.6.3, the seed ξ
+       generated during ML-DSA.KeyGen can be stored for later expansion
+       using ML-DSA.KeyGen_internal.
 
        Vulnerabilities like the "Unbindable Kemmy Schmidt" attack [BIND]
        pose risks in non-HSM environments, where expanded private keys
@@ -218,14 +192,6 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
        involves polynomial operations using Number Theoretic Transform
        (NTT) and hashing, is computationally efficient.  In contrast,
        SLH-DSA key generation requires constructing a Merkle tree and
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 4]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
        multiple calls to Winternitz One-Time Signature (WOTS+) key
        generation, making it significantly slower due to the recursive
        hash computations involved.  HSM designers must carefully balance
@@ -274,28 +240,20 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
        more practical solution in some scenarios and could be considered
        for optimization.
 
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 5]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
-   3.  *Secure Exporting of Seeds*
-       Given the potential for hardware failures or the end-of-life of
-       cryptographic devices, it is essential to plan for backup and
-       recovery of the cryptographic seeds.  HSMs should support secure
-       seed backup mechanisms, ideally leveraging encrypted storage and
-       ensuring that the backup data is protected from unauthorized
-       access.  In a disaster recovery scenario, the seed should be
-       recoverable to enable the re-derivation of the private key,
-       provided the proper security measures are in place to prevent
-       unauthorized extraction.  For secure exporting of seeds, PQC
-       encryption algorithms, such as ML-KEM, should be used to encrypt
-       the seed before export.  This ensures that the seed remains
-       protected even if the export process is vulnerable to quantum
-       attacks.  The process for secure export should include:
+   3.  *Secure Exporting of Seeds* Given the potential for hardware
+       failures or the end-of-life of cryptographic devices, it is
+       essential to plan for backup and recovery of the cryptographic
+       seeds.  HSMs should support secure seed backup mechanisms,
+       ideally leveraging encrypted storage and ensuring that the backup
+       data is protected from unauthorized access.  In a disaster
+       recovery scenario, the seed should be recoverable to enable the
+       re-derivation of the private key, provided the proper security
+       measures are in place to prevent unauthorized extraction.  For
+       secure exporting of seeds, PQC encryption algorithms, such as ML-
+       KEM, should be used to encrypt the seed before export.  This
+       ensures that the seed remains protected even if the export
+       process is vulnerable to quantum attacks.  The process for secure
+       export should include:
 
        *  Encrypting the seed using a quantum-resistant encryption
           algorithm, such as ML-KEM, rather than relying on traditional
@@ -325,18 +283,6 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
    seed (not the full private key) needs to be stored.  The ephemeral
    seed must be securely erased immediately after the key pair is
    generated to prevent potential leakage or misuse.
-
-
-
-
-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 6]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
 
    Additionally, ephemeral keys should not be reused across different
    algorithm suites and sessions.  Each ephemeral key-pair must be
@@ -386,14 +332,6 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
    multiple Number Theoretic Transform (NTT) operations, matrix
    expansions, and rejection sampling loops.  These steps involve
    storing large polynomial vectors and intermediate values, making ML-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 7]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
    DSA more memory-intensive.  If an HSM has sufficient RAM, this may
    not be an issue.  However, in constrained environments with limited
    RAM, implementing ML-DSA can be challenging.  The signer must store
@@ -442,14 +380,6 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
    upgrade process itself can become a critical attack vector if not
    designed to be quantum-safe.  If an adversary compromises the update
    mechanism, they could introduce malicious firmware, undermining all
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 8]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
    other security properties of the HSM.  Therefore, ensuring a quantum-
    safe firmware upgrade process is critical for the security of
    deployed HSMs.
@@ -497,15 +427,6 @@ Internet-Draft            Adapting HSMs for PQC            February 2025
        should verify the authorization, ensuring that only trusted
        parties can access the key.
 
-
-
-
-
-Reddy                    Expires 22 August 2025                 [Page 9]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
    2.  Implicit Authorization (Session Management): Implicit
        authorization refers to scenarios where access to PQC private key
        is granted indirectly, typically by establishing a session or
@@ -551,16 +472,6 @@ Acknowledgements
 References
 
 Normative References
-
-
-
-
-
-
-Reddy                    Expires 22 August 2025                [Page 10]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
 
    [I-D.sfluhrer-cfrg-ml-kem-security-considerations]
               Fluhrer, S., Dang, Q., Mattsson, J. P., Milner, K., and D.
@@ -610,14 +521,6 @@ Informative References
               <https://nvlpubs.nist.gov/nistpubs/SpecialPublications/
               NIST.SP.800-208.pdf>.
 
-
-
-
-Reddy                    Expires 22 August 2025                [Page 11]
-
-Internet-Draft            Adapting HSMs for PQC            February 2025
-
-
    [SLH-DSA]  "FIPS-205: Stateless Hash-Based Digital Signature
               Standard", <https://nvlpubs.nist.gov/nistpubs/FIPS/
               NIST.FIPS.205.pdf>.
@@ -630,43 +533,3 @@ Author's Address
    Karnataka
    India
    Email: kondtir@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Reddy                    Expires 22 August 2025                [Page 12]
