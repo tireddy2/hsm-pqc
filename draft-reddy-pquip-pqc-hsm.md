@@ -66,8 +66,11 @@ informative:
 --- abstract
 
 
-Hardware Security Modules (HSMs) are integral to securely managing cryptographic keys, especially when deploying Post-Quantum Cryptography (PQC) algorithms, which often require handling significantly larger private keys compared to traditional algorithms. This draft discusses PQC impacts to HSM firmware updates, backups, and key storage.
-
+Hardware Security Modules (HSMs) play a critical role in securing cryptographic operations, including the adoption of Post-Quantum
+Cryptography (PQC). This document examines the use of seed-based key generation in HSMs, which reduces storage requirements but increases
+computational overhead for key derivation. It explores trade-offs between storage efficiency and performance, addressing challenges in
+ephemeral key handling and optimization strategies for PQC signature algorithms. It also discusses PQC impacts to HSM firmware updates and
+backup.
 
 --- middle
 
