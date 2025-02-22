@@ -34,6 +34,12 @@ author:
     region: Karnataka
     country: India
     email: "kondtir@gmail.com"
+ -
+    fullname: Dan Wing
+    organization: Cloud Software Group Holdings, Inc.
+    abbrev: Cloud Software Group
+    country: United States of America
+    email: danwing@gmail.com
 
 normative:
 
