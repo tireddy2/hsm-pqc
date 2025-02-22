@@ -65,7 +65,9 @@ informative:
 
 --- abstract
 
-Hardware Security Modules (HSMs) play a critical role in securing cryptographic operations, including the adoption of Post-Quantum Cryptography (PQC). This document examines the use of seed-based key generation in HSMs, which reduces storage requirements but increases computational overhead for key derivation. It explores trade-offs between storage efficiency and performance, addressing challenges in ephemeral key handling and optimization strategies for PQC signature algorithms. The document provides guidelines for balancing security, efficiency, and scalability in PQC deployments within HSMs.
+
+Hardware Security Modules (HSMs) are integral to securely managing cryptographic keys, especially when deploying Post-Quantum Cryptography (PQC) algorithms, which often require handling significantly larger private keys compared to traditional algorithms. This draft discusses PQC impacts to HSM firmware updates, backups, and key storage.
+
 
 --- middle
 
@@ -79,9 +81,7 @@ This document focuses on the use of PQC algorithms in HSMs, specifically the thr
 
 # Key Management in HSMs for PQC
 
-HSMs are designed to securely store and manage cryptographic keys, but their capabilities and constraints must be carefully considered when deploying PQC algorithms. Given the typically larger size of private keys for PQC algorithms, it is important to ensure that HSMs are optimized for handling these larger key sizes without compromising performance or security.
-
-Hardware Security Modules are resource-constrained devices, particularly when dealing with PQC algorithms. The private keys in PQC algorithms (e.g., ML-KEM, ML-DSA or SLH-DSA) can be significantly larger than traditional RSA or ECC keys, placing demands on HSMs’ storage, processing power, and memory. Therefore, HSMs should be configured to prioritize efficient use of available resources while managing these larger keys. One key strategy to mitigate storage limitations is to store only the seed rather than the full expanded private key, as the seed is far smaller and can be used to derive the expanded private key when necessary.
+One mitigation of storage limitations is to store only the seed rather than the full expanded private key, as the seed is far smaller and can derive the expanded private key as necessary.
 
 ## Seed Management {#Seed}
 
@@ -89,27 +89,31 @@ The seed generated during the PQC key generation function is highly sensitive, a
 
 To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
-1. **Seed Storage**
+### Seed Storage
+
    Seeds must be securely stored within a cryptographic module, such as a Hardware Security Module (HSM), to ensure protection against unauthorized access. Since the seed can be used to compute the private key, it must be safeguarded with the same level of protection as the private key itself. For example, according to {{ML-DSA}} Section 3.6.3, the seed `ξ` generated during `ML-DSA.KeyGen` can be stored for later expansion using `ML-DSA.KeyGen_internal`.
 
    Vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} pose risks in non-HSM environments, where expanded private keys can be manipulated. However, as outlined in Section 4 of {{BIND}}, such attacks typically depend on scenarios where private keys are exposed or revealed under certain conditions. This highlights the importance of using the seed of the private key as a secure representation and rerunning KeyGen instead of relying on cached private keys. In cases where private keys are imported or unwrapped into an HSM, it is recommended to use seeds instead of private keys to address potential attacks, as this ensures the key material is securely re-derived and not exposed or manipulated during the import process. In contrast, when an HSM is used for long-term key storage (rather than importing keys from external sources), it helps ensure the integrity of the stored private keys, mitigating such vulnerabilities.
 
    The ML-DSA and ML-KEM private key formats, as specified in {{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}}, represent the private key using a seed from which the expanded private key is derived. While these formats rely on the seed for key generation, an HSM may choose to store the expanded private key to avoid the additional computation required for running KeyGen. This can be considered a trade-off for performance, but it should be done with caution, as the expanded private key format in ML-KEM provides only LEAK-BIND-K-PK and LEAK-BIND-K-CT security, without addressing MAL-BIND-K-CT or MAL-BIND-K-PK security. Using the 64-byte seed format strengthens binding security by adding MAL-BIND-K-CT security, although MAL-BIND-K-PK remains unaddressed (Section 4 of {{!I-D.sfluhrer-cfrg-ml-kem-security-considerations}}).
 
-   A significant advantage of this approach is that seeds require much less storage than private keys, which is especially important in Hardware Security Modules (HSMs), as they are typically resource-constrained devices. This limitation becomes even more critical with post-quantum cryptography (PQC) algorithms, where private keys can be exceptionally large. By storing only the seed and deriving the private key as needed, HSMs can significantly reduce storage overhead, making this approach highly efficient for scaling operations across multiple key pairs while adhering to the constraints of these devices. However, this seed-based approach introduces trade-offs in performance, as key derivation incurs additional computation. The impact of this computational overhead varies depending on the algorithm. For instance, ML-DSA key generation, which primarily involves polynomial operations using Number Theoretic Transform (NTT) and hashing, is computationally efficient. In contrast, SLH-DSA key generation requires constructing a Merkle tree and multiple calls to Winternitz One-Time Signature (WOTS+) key generation, making it significantly slower due to the recursive hash computations involved. HSM designers must carefully balance storage efficiency and computational overhead based on system requirements and operational constraints. While HSMs already employ optimized key storage mechanisms, the choice between storing full private keys or only seeds depends on the specific design goals and performance considerations of the implementation.
+   However, this seed-based approach introduces trade-offs in performance, as key derivation incurs additional computation. The impact of this computational overhead varies depending on the algorithm. For instance, ML-DSA key generation, which primarily involves polynomial operations using Number Theoretic Transform (NTT) and hashing, is computationally efficient. In contrast, SLH-DSA key generation requires constructing a Merkle tree and multiple calls to Winternitz One-Time Signature (WOTS+) key generation, making it significantly slower due to the recursive hash computations involved. HSM designers must carefully balance storage efficiency and computational overhead based on system requirements and operational constraints. While HSMs already employ optimized key storage mechanisms, the choice between storing full private keys or only seeds depends on the specific design goals and performance considerations of the implementation.
 
    A key challenge arises when importing an existing private key into a system designed to store only seeds. When a user attempts to import an already expanded private key, there is a mismatch between the key format used internally (seed-based) and the expanded private key. This issue arises because the internal format is designed for efficient key storage by deriving the private key from the seed, while the expanded private key is already fully computed. As NIST has not defined a single private key format for PQC algorithms, this creates a potential gap in interoperability.
 
    If the seed is not securely stored at the time of key generation, it is permanently lost because the process of deriving an expanded key from the seed relies on a one-way cryptographic function. This one-way function is designed to ensure that the expanded private key can be deterministically derived from the seed, but the reverse operation, deriving the original seed from the expanded key is computationally infeasible.
 
-2. **Efficient Key Derivation**
+### Efficient Key Derivation
+
    When storing only the seed in an HSM, it is crucial that the HSM is capable of deriving the private key efficiently whenever required. However, it is important to note that constantly re-deriving the private key for every cryptographic operation may introduce significant performance overhead. In scenarios where performance is a critical consideration, it may be more efficient to store the expanded private key directly instead of only the seed.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must still be implemented in a way that can securely operate within the resource constraints of the HSM. If using the seed-only model, the derived private key should only be temporarily held in memory during the cryptographic operation and discarded immediately after use. However, storing the expanded private key may be a more practical solution in some scenarios and could be considered for optimization.
 
-3. **Secure Exporting of Seeds**
-   Given the potential for hardware failures or the end-of-life of cryptographic devices, it is essential to plan for backup and recovery of the cryptographic seeds. HSMs should support secure seed backup mechanisms, ideally leveraging encrypted storage and ensuring that the backup data is protected from unauthorized access. In a disaster recovery scenario, the seed should be recoverable to enable the re-derivation of the private key, provided the proper security measures are in place to prevent unauthorized extraction.
+### Secure Exporting of Seeds
+
+   Given the potential for hardware failures or the end-of-life of HSM devices, it is essential to plan for backup and recovery of the cryptographic seeds. HSMs should support secure seed backup mechanisms, ideally leveraging encrypted storage and ensuring that the backup data is protected from unauthorized access. In a disaster recovery scenario, the seed should be recoverable to enable the re-derivation of the private key, provided the proper security measures are in place to prevent unauthorized extraction.
    For secure exporting of seeds, PQC encryption algorithms, such as ML-KEM, should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks. The process for secure export should include:
+
    - Encrypting the seed using a quantum-resistant encryption algorithm, such as ML-KEM, rather than relying on traditional encryption algorithms.
    - Ensuring the exported seed is accessible only to authorized entities.
    - Enforcing strict access controls and secure transport mechanisms to prevent unauthorized access during transfer.
@@ -125,9 +129,10 @@ For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, whic
 Additionally, ephemeral keys should not be reused across different algorithm suites and sessions. Each ephemeral key-pair must be uniquely associated with a specific key exchange instance to prevent cryptographic vulnerabilities, such as cross-protocol attacks or unintended key reuse.
 
 HSMs implementing PQC ephemeral key management will have to:
-* Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
-* Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
-* Prevent key reuse across different algorithm suites or sessions.
+
+  * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
+  * Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
+  * Prevent key reuse across different algorithm suites or sessions.
 
 # Optimizing Performance in Hardware Implementations of PQC Signature Algorithms
 
@@ -136,6 +141,7 @@ When implementing PQC signature algorithms in hardware devices, such as Hardware
 One effective approach involves sending only a message digest to the HSM for signing. By signing the digest of the content rather than the entire content, the communication between the application and the HSM is minimized, enabling better performance. This method is applicable for any PQC signature algorithm, whether it is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is often provided to pre-hash or process the message in a way that avoids sending the entire raw message for signing. In particular, algorithms like SLH-DSA present challenges due to their construction, which requires multiple passes over the message digest during the signing process. The signer does not retain the entire message or its full digest in memory at once. Instead, different parts of the message digest are processed sequentially during the signing procedure. This differs from traditional algorithms like RSA or ECDSA, which allow for more efficient processing of the message, without requiring multiple passes or intermediate processing of the digest.
 
 A key consideration when deploying ML-DSA in HSMs is the amount of RAM available. ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant memory during signing due to multiple Number Theoretic Transform (NTT) operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive. If an HSM has sufficient RAM, this may not be an issue. However, in constrained environments with limited RAM, implementing ML-DSA can be challenging. The signer must store and process multiple transformed values, leading to increased computational overhead if the HSM lacks the necessary RAM to manage these operations efficiently.
+
 To address the memory consumption challenge, algorithms like ML-DSA offer a form of pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}. The mu value provides an abstraction for pre-hashing by allowing the hash or message representative to be computed outside the HSM. This feature offers additional flexibility by enabling the use of different cryptographic modules for the pre-hashing step, reducing RAM consumption within the HSM. The pre-computed mu value is then supplied to the HSM, eliminating the need to transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}} discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step (ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the pre-hashed message (mu) is sent to the HSM for signing (ExternalMu-ML-DSA.Sign).
 By implementing ExternalMu-ML-DSA.Prehash in software and ExternalMu-ML-DSA.Sign in an HSM, the cryptographic workload is efficiently distributed, making it practical for high-volume signing operations even in memory-constrained HSM environments.
 
