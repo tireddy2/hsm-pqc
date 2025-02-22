@@ -65,13 +65,17 @@ informative:
 
 --- abstract
 
+
 Hardware Security Modules (HSMs) are integral to securely managing cryptographic keys, especially when deploying Post-Quantum Cryptography (PQC) algorithms, which often require handling significantly larger private keys compared to traditional algorithms. This draft discusses PQC impacts to HSM firmware updates, backups, and key storage.
+
 
 --- middle
 
 # Introduction
 
-As cryptographic standards evolve to address the threats posed by quantum computing, the deployment of Post-Quantum Cryptography (PQC) algorithms in secure systems has become a pressing challenge. Hardware Security Modules (HSMs) are widely used to securely generate, store, and manage cryptographic keys, but the transition to PQC algorithms introduces new complexities due to the increased size of private keys. HSMs, typically constrained by storage, processing power, and memory, must adapt to efficiently handle these larger key sizes while ensuring the security of cryptographic operations. This draft explores strategies for optimizing HSM performance and security in the context of PQC.
+The transition to post-quantum cryptography (PQC) introduces new challenges for cryptographic key management, particularly within constrained Hardware Security Modules (HSMs). Unlike high-performance, rack-mounted HSMs, constrained HSMs operate with limited memory, storage, and computational resources, making the adoption of PQC algorithms more challenging. The increased key sizes and computational demands of PQC require careful consideration to ensure secure and efficient key management within these constrained environments.
+
+This document provides industry guidance and best practices for integrating PQC algorithms into constrained HSMs. It explores key storage strategies, ephemeral key management, and performance optimizations specific to resource-limited environments. One approach to mitigating storage constraints is seed-based key generation, where only a small seed is stored instead of the full private key, as supported by PQC schemes like ML-DSA and SLH-DSA. However, this technique increases computational overhead due to the need to derive full private keys on demand. The document also discusses considerations for ephemeral key generation in protocols like TLS and IPsec, along with techniques to optimize PQC signature operations to enhance performance within constrained HSMs.
 
 This document focuses on the use of PQC algorithms in HSMs, specifically the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA. While other PQC algorithms, such as stateful hash-based signatures, also provide quantum-safe security, they are not covered in this version of the document. Future revisions may expand the scope to include additional PQC algorithms.
 
@@ -89,7 +93,7 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
    Seeds must be securely stored within a cryptographic module, such as a Hardware Security Module (HSM), to ensure protection against unauthorized access. Since the seed can be used to compute the private key, it must be safeguarded with the same level of protection as the private key itself. For example, according to {{ML-DSA}} Section 3.6.3, the seed `ξ` generated during `ML-DSA.KeyGen` can be stored for later expansion using `ML-DSA.KeyGen_internal`.
 
-   Vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} pose risks in non-HSM environments, where expanded private keys can be manipulated. However, as outlined in Section 4 of {{BIND}}, such attacks typically depend on scenarios where private keys are exposed or revealed under certain conditions. This highlights the importance of using the seed of the private key as a secure representation and rerunning KeyGen instead of relying on cached private keys. In cases where private keys are imported or unwrapped into an HSM, it is recommended to use seeds instead of private keys to address potential attacks, as this ensures the key material is securely re-derived and not exposed or manipulated during the import process. In contrast, when the HSM is used for long-term key storage, it ensures the integrity of the private keys, mitigating such vulnerabilities.
+   Vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} pose risks in non-HSM environments, where expanded private keys can be manipulated. However, as outlined in Section 4 of {{BIND}}, such attacks typically depend on scenarios where private keys are exposed or revealed under certain conditions. This highlights the importance of using the seed of the private key as a secure representation and rerunning KeyGen instead of relying on cached private keys. In cases where private keys are imported or unwrapped into an HSM, it is recommended to use seeds instead of private keys to address potential attacks, as this ensures the key material is securely re-derived and not exposed or manipulated during the import process. In contrast, when an HSM is used for long-term key storage (rather than importing keys from external sources), it helps ensure the integrity of the stored private keys, mitigating such vulnerabilities.
 
    The ML-DSA and ML-KEM private key formats, as specified in {{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}}, represent the private key using a seed from which the expanded private key is derived. While these formats rely on the seed for key generation, an HSM may choose to store the expanded private key to avoid the additional computation required for running KeyGen. This can be considered a trade-off for performance, but it should be done with caution, as the expanded private key format in ML-KEM provides only LEAK-BIND-K-PK and LEAK-BIND-K-CT security, without addressing MAL-BIND-K-CT or MAL-BIND-K-PK security. Using the 64-byte seed format strengthens binding security by adding MAL-BIND-K-CT security, although MAL-BIND-K-PK remains unaddressed (Section 4 of {{!I-D.sfluhrer-cfrg-ml-kem-security-considerations}}).
 
@@ -181,4 +185,4 @@ Side-channel attacks exploit physical leaks during cryptographic operations, suc
 # Acknowledgements
 {:numbered="false"}
 
-Thanks to Aritra Banerjee for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, and Aritra Banerjee for the detailed review.
