@@ -139,7 +139,9 @@ Wherever possible, seed generation, storage, and usage should remain entirely wi
 
 In protocols like TLS and IPsec, ephemeral keys are used for key exchange. Given the increased size of PQC key material, ephemeral key management will have to be optimized for both security and performance.
 
-For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, which needs to be securely stored temporarily and erased after use. This approach ensures that ephemeral key generation is deterministic and minimizes storage overhead in HSMs, as only the seed (not the full private key) needs to be stored. The ephemeral seed must be securely erased immediately after the key pair is generated to prevent potential leakage or misuse.
+For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, which needs to be securely stored temporarily and erased after use. This approach ensures that ephemeral key generation is deterministic and minimizes storage overhead in HSMs, as only the seed (not the full private key) needs to be stored. The ephemeral seed must be deleted immediately after the key pair is generated to prevent potential leakage or misuse.
+
+Furthermore, once the shared secret is derived, the private key must also be deleted. Since the private key resides in the HSM, removing it optimizes memory usage, reducing the footprint of PQC key material in constrained HSMs.
 
 Additionally, ephemeral keys should not be reused across different algorithm suites and sessions. Each ephemeral key-pair must be uniquely associated with a specific key exchange instance to prevent cryptographic vulnerabilities, such as cross-protocol attacks or unintended key reuse.
 
@@ -147,6 +149,7 @@ HSMs implementing PQC ephemeral key management will have to:
 
   * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
   * Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
+  * Delete the private key after the shared secret is derived.
   * Prevent key reuse across different algorithm suites or sessions.
 
 # Optimizing Performance in Hardware Implementations of PQC Signature Algorithms
