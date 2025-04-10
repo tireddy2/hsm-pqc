@@ -77,7 +77,7 @@ informative:
 
 --- abstract
 
-This document provides guidance for integrating Post-Quantum Cryptography (PQC) into constrained devices, such as IoT devices and lightweight Hardware Security Modules (HSMs), which operate with limited compute, memory, storage, and power. It explores the use of seed-based key generation to minimize persistent storage requirements, strategies for efficient ephemeral key handling, and techniques for offloading cryptographic operations in resource-constrained environments. The document also discusses the impact of PQC on firmware update mechanisms for constrained devices.
+This document offers guidance on incorporating Post-Quantum Cryptography (PQC) into resource-constrained devices, including IoT devices and lightweight Hardware Security Modules (HSMs), which operate under tight limitations on compute power, memory, storage, and energy. It highlights the role of the Root of Trust in enabling secure operations, including seed-based key generation to reduce the need for persistent storage, efficient approaches to managing ephemeral keys, and methods for offloading cryptographic tasks in low-resource environments. Additionally, it examines how PQC affects firmware update mechanisms in such constrained systems.
 
 --- middle
 
@@ -89,7 +89,7 @@ This document provides industry guidance and best practices for integrating PQC 
 
 This document focuses on the use of PQC algorithms in constrained devices, specifically the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA. While other PQC algorithms, such as stateful hash-based signatures, also provide post-quantum security, they are not covered in this version of the document. Future revisions may expand the scope to include additional PQC algorithms.
 
-# Key Management in Constrained Devices for PQC 
+# Key Management in Constrained Devices for PQC
 The embedded cryptographic components used in IoT are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
 
 One mitigation of storage limitations is to store only the seed rather than the full expanded private key, as the seed is far smaller and can derive the expanded private key as necessary.
@@ -104,11 +104,11 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
    Seeds must be securely stored within a cryptographic module of the device whether hardware or software-based to protect against unauthorized access. Since the seed can be used to deterministically derive the private key, it must be safeguarded with the same level of protection as the private key itself. For example, according to {{ML-DSA}} Section 3.6.3, the seed ξ generated during ML-DSA.KeyGen can be stored for later use with ML-DSA.KeyGen_internal.
 
-   The choice between storing a seed or an expanded private key involves trade-offs between storage efficiency and performance. Some constrained cryptographic modules may store only the seed and derive the expanded private key on demand, whereas others may prefer storing the full expanded key to reduce computational overhead during key usage. 
-   
+   The choice between storing a seed or an expanded private key involves trade-offs between storage efficiency and performance. Some constrained cryptographic modules may store only the seed and derive the expanded private key on demand, whereas others may prefer storing the full expanded key to reduce computational overhead during key usage.
+
    While vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} demonstrate the risks of manipulating expanded private keys in environments lacking hardware-backed protections, these attacks generally assume an adversary has some level of control over the expanded key format. However, in a hardware-backed protcted environment, where private keys are typically protected from such manipulation, the primary motivation for storing the seed rather than the expanded key is not directly tied to mitigating "Kemmy" attacks.
 
-   The ML-DSA and ML-KEM private key formats, as specified in {{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}}, represent the private key using a seed from which the expanded private key is derived. While these formats rely on the seed for key generation, an constrained cryptographic module may choose to store the expanded private key to avoid the additional computation required for running KeyGen. 
+   The ML-DSA and ML-KEM private key formats, as specified in {{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}}, represent the private key using a seed from which the expanded private key is derived. While these formats rely on the seed for key generation, an constrained cryptographic module may choose to store the expanded private key to avoid the additional computation required for running KeyGen.
 
    This choice between storing the seed or the expanded private key has direct implications on performance, as key derivation incurs additional computation. The impact of this overhead varies depending on the algorithm. For instance, ML-DSA key generation, which primarily involves polynomial operations using the Number Theoretic Transform (NTT) and hashing, is computationally efficient compared to other post-quantum schemes. In contrast, SLH-DSA key generation requires constructing a Merkle tree and multiple calls to Winternitz One-Time Signature (WOTS+) key generation, making it significantly slower due to the recursive hash computations involved. Designers of constrained systems must carefully balance storage efficiency and computational overhead based on system requirements and operational constraints. While constrained systems employ various key storage strategies, the decision to store full private keys or only seeds depends on design goals, performance considerations, and standards compliance (e.g., PKCS#11).
 
@@ -120,7 +120,7 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
    When storing only the seed in a constrained cryptographic module, it is crucial that the device is capable of deriving the private key efficiently whenever required. However, it is important to note that constantly re-deriving the private key for every cryptographic operation may introduce significant performance overhead. In scenarios where performance is a critical consideration, it may be more efficient to store the expanded private key directly instead of only the seed.
 
-   The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must be implemented in a way that can securely operate within the resource constraints of the device. If using the seed-only model, the derived private key should only be temporarily held in memory during the cryptographic operation and discarded immediately after use. However, storing the expanded private key may be a more practical solution in time-sensitive applications or for devices that frequently perform cryptographic operations. 
+   The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must be implemented in a way that can securely operate within the resource constraints of the device. If using the seed-only model, the derived private key should only be temporarily held in memory during the cryptographic operation and discarded immediately after use. However, storing the expanded private key may be a more practical solution in time-sensitive applications or for devices that frequently perform cryptographic operations.
 
 ### Secure Exporting of Seeds
 
