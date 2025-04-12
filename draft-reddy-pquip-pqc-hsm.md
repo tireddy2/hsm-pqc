@@ -16,6 +16,7 @@ keyword:
  - IoT
  - TEE
  - HSM
+ - RoT
 
 
 venue:
