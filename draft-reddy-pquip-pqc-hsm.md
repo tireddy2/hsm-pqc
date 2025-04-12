@@ -86,8 +86,7 @@ This document offers guidance on incorporating Post-Quantum Cryptography (PQC) i
 
 The transition to post-quantum cryptography introduces significant challenges for resource-constrained devices such as IoT devices, lightweight HSMs, secure elements (e.g., SIMs), and Trusted Execution Environments (TEEs). These devices often operate with limited memory, non-volatile storage, processing power, and battery life, making the adoption of PQC algorithms which typically involve larger key sizes and are more computationally intensive than traditional algorithms particularly challenging. The increased key sizes and computational demands of PQC require careful consideration to ensure secure and efficient key management within these constrained environments.
 
-This document provides industry guidance and best practices for integrating PQC algorithms into constrained devices. It explores key storage strategies, ephemeral key management, and performance optimizations specific to resource-limited environments. One approach to mitigating storage constraints is seed-based key generation, where only a small seed is stored instead of the full private key, as supported by PQC schemes like ML-DSA and SLH-DSA. However, this technique increases computational overhead due to the need to derive full private keys on demand. The document also discusses considerations for ephemeral key generation in protocols like TLS and IPsec, along with techniques to optimize PQC signature operations to enhance performance within constrained crytographic modules.
-
+This document provides industry guidance and best practices for integrating PQC algorithms into constrained devices. It explores key storage strategies, ephemeral key management, and performance optimizations specific to resource-limited environments. One approach to mitigating storage constraints is seed-based key generation, where only a small seed is stored instead of the full private key, as supported by PQC schemes like ML-DSA and SLH-DSA. However, this technique increases computational overhead due to the need to derive full private keys on demand,  a classic computation-versus-storage tradeoff. The document also discusses considerations for ephemeral key generation in protocols like TLS and IPsec, along with techniques to optimize PQC signature operations to enhance performance within constrained crytographic modules.
 
 This document focuses on the use of PQC algorithms in constrained devices, specifically the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA. While other PQC algorithms, such as stateful hash-based signatures, also provide post-quantum security, they are not covered in this version of the document. Future revisions may expand the scope to include additional PQC algorithms.
 
@@ -110,19 +109,17 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
    While vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} demonstrate the risks of manipulating expanded private keys in environments lacking hardware-backed protections, these attacks generally assume an adversary has some level of control over the expanded key format. However, in a hardware-backed protcted environment, where private keys are typically protected from such manipulation, the primary motivation for storing the seed rather than the expanded key is not directly tied to mitigating "Kemmy" attacks.
 
-
    The ML-DSA and ML-KEM private key formats, as specified in {{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}}, represent the private key using a seed from which the expanded private key is derived. While these formats rely on the seed for key generation, an constrained cryptographic module may choose to store the expanded private key to avoid the additional computation required for running KeyGen.
 
    This choice between storing the seed or the expanded private key has direct implications on performance, as key derivation incurs additional computation. The impact of this overhead varies depending on the algorithm. For instance, ML-DSA key generation, which primarily involves polynomial operations using the Number Theoretic Transform (NTT) and hashing, is computationally efficient compared to other post-quantum schemes. In contrast, SLH-DSA key generation requires constructing a Merkle tree and multiple calls to Winternitz One-Time Signature (WOTS+) key generation, making it significantly slower due to the recursive hash computations involved. Designers of constrained systems must carefully balance storage efficiency and computational overhead based on system requirements and operational constraints. While constrained systems employ various key storage strategies, the decision to store full private keys or only seeds depends on design goals, performance considerations, and standards compliance (e.g., PKCS#11).
 
    A challenge arises when importing an existing private key into a system designed to store only seeds. When a user attempts to import an already expanded private key, there is a mismatch between the key format used internally (seed-based) and the expanded private key. This issue arises because the internal format is designed for efficient key storage by deriving the private key from the seed, while the expanded private key is already fully computed. As NIST has not defined a single private key format for PQC algorithms, this creates a potential gap in interoperability.
 
-   If the seed is not securely stored at the time of key generation, it is permanently lost because the process of deriving an expanded key from the seed relies on a one-way cryptographic function. This one-way function is designed to ensure that the expanded private key can be deterministically derived from the seed, but the reverse operation, deriving the original seed from the expanded key, is computationally infeasible.
+   If the seed is not securely stored at the time of key generation, it is permanently lost because the process of deriving an expanded key from the seed relies on a one-way cryptographic function. This one-way function is designed to ensure that the expanded private key can be deterministically derived from the seed, but the reverse operation, deriving the original seed from the expanded key is computationally infeasible.
 
 ### Efficient Key Derivation
 
-   When storing only the seed in a constrained cryptographic module, it is crucial that the device is capable of deriving the private key efficiently whenever required. However, it is important to note that constantly re-deriving the private key for every cryptographic operation may introduce significant performance overhead. In scenarios where performance is a critical consideration, it may be more efficient to store the expanded private key directly instead of only the seed.
-
+   When storing only the seed in a constrained cryptographic module, it is crucial that the device is capable of deriving the private key efficiently whenever required. However, it is important to note that constantly re-deriving the private key for every cryptographic operation may introduce significant performance overhead. In scenarios where performance is a critical consideration, it may be more efficient to store the expanded private key directly instead of only the seed. Higher quality implementations may also retain (cache) recently-used or frequently-used private keys to avoid the computational overhead and delay of deriving the private key from the seed with each request.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar functions for other PQC algorithms, must be implemented in a way that can securely operate within the resource constraints of the device. If using the seed-only model, the derived private key should only be temporarily held in memory during the cryptographic operation and discarded immediately after use. However, storing the expanded private key may be a more practical solution in time-sensitive applications or for devices that frequently perform cryptographic operations.
 
@@ -170,14 +167,9 @@ By implementing ExternalMu-ML-DSA.Prehash in software and ExternalMu-ML-DSA.Sign
 
 Key Rotation and Renewal: In constrained devices, managing the lifecycle of cryptographic keys including periodic key rotation and renewal is critical for maintaining long-term security and supporting cryptographic agility. While constrained devices may rely on integrated secure elements or lightweight HSMs for secure key storage and operations, the responsibility for orchestrating key rotation typically resides in the application layer or external device management infrastructure.
 
-
 Although the underlying cryptographic module may offer primitives to securely generate new key pairs, store fresh seeds, or delete obsolete keys, these capabilities must be integrated into the device’s broader key management framework. This process is especially important in the context of PQC, where evolving research may lead to changes in recommended algorithms, parameters, and key management practices.
 
-
 The security of PQC schemes continues to evolve, with potential risks arising from advances in post-quantum algorithms, cryptanalytic or implementation vulnerabilities. As a result, constrained devices should be designed to support flexible and updatable key management policies. This includes the ability to:
-
-
-To address the memory consumption challenge, algorithms like ML-DSA offer a form of pre-hash using the "mu" (message representative) value described in Section 6.2 of {{ML-DSA}}. The mu value provides an abstraction for pre-hashing by allowing the hash or message representative to be computed outside the HSM. This feature offers additional flexibility by enabling the use of different cryptographic modules for the pre-hashing step, reducing RAM consumption within the HSM. The pre-computed mu value is then supplied to the HSM, eliminating the need to transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}} discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step (ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the pre-hashed message (mu) is sent to the HSM for signing (ExternalMu-ML-DSA.Sign).
 
 * Rotate keys periodically to provide forward-secrecy,
 
@@ -195,12 +187,15 @@ CRQCs pose an additional risk by breaking traditional digital signatures (e.g., 
 
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing. Recommended post-quantum algorithms include:
 
-* SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures. Given that the first vulnerabilities in PQC algorithms are more likely to arise from implementation flaws rather than fundamental mathematical weaknesses, SLH-DSA is still susceptible to attacks if not properly implemented..
+* SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness         
+  assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures. Given that the first vulnerabilities in PQC algorithms are more likely to arise from implementation flaws rather than fundamental mathematical weaknesses, SLH-DSA is still susceptible to attacks if not properly implemented.
 
-* HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
+* HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing 
+  long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
 
-* XMSS (eXtended Merkle Signature Scheme): Another stateful hash-based signature scheme similar to HSS-LMS {{RFC8391}}. XMSS signatures are slightly shorter than HSS-LMS signatures for equivalent security. However, HSS-LMS provides performance advantages and HSS-LMS is considered
-simpler (see Section 10 of {{RFC8554}}).
+* XMSS (eXtended Merkle Signature Scheme): Another stateful hash-based signature scheme similar to HSS-LMS 
+  {{RFC8391}}. XMSS signatures are slightly shorter than HSS-LMS signatures for equivalent security. However, HSS-LMS provides performance advantages and HSS-LMS is considered
+  simpler (see Section 10 of {{RFC8554}}).
 
 Firmware images can be signed using one of these post-quantum algorithms before being distributed to constraied devices. {{?I-D.wiggers-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
@@ -211,9 +206,7 @@ Firmware images often have a long lifetime, requiring cryptographic algorithms t
 The security considerations for key management in constrained devices for PQC focus on the secure storage and handling of cryptographic seeds, which are used to derive private keys. Seeds must be protected with the same security measures as private keys, and key derivation should be efficient and secure within resource-constrained cryptographic module. Secure export and backup mechanisms for seeds are essential to ensure recovery in case of hardware failure, but these processes must be encrypted and protected from unauthorized access.
 
 ## Side Channel Protection
-
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, their significance in secure hardware design cannot be understated. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
-
 
 # Acknowledgements
 {:numbered="false"}
