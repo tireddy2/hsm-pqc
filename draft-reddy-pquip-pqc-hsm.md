@@ -104,7 +104,7 @@ This document provides industry guidance and best practices for integrating PQC 
 into constrained devices. It explores key storage strategies, ephemeral key management,
 and performance optimizations specific to resource-limited environments. One approach to
 mitigating storage constraints is seed-based key generation, where only a small seed is
-stored instead of the full private key, as supported by PQC schemes like ML-DSA and 
+stored instead of the full private key, as supported by PQC schemes like ML-DSA and
 SLH-DSA. However, this technique increases computational overhead due to the need to derive
 full private keys on demand,  a classic computation-versus-storage tradeoff. The document
 also discusses considerations for ephemeral key generation in protocols like TLS and
@@ -291,21 +291,28 @@ signer must store and process multiple transformed values, leading to increased
 computational overhead if the cryptographic module lacks the necessary memory to manage
 these operations efficiently.
 
-To address the memory consumption challenge, algorithms like ML-DSA offer a form of 
+To address the memory consumption challenge, algorithms like ML-DSA offer a form of
 pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}.
 The mu value provides an abstraction for pre-hashing by allowing the hash or message
 representative to be computed outside the cryptographic module. This feature offers
-additional flexibility by enabling the use of different cryptographic modules for the 
-pre-hashing step, reducing memory consumption within the cryptographic module. 
+additional flexibility by enabling the use of different cryptographic modules for the
+pre-hashing step, reducing memory consumption within the cryptographic module.
 The pre-computed mu value is then supplied to the cryptographic module, eliminating the need to
 transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}}
-discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step 
-(ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the 
-pre-hashed message (mu) is sent to the hardware cryptographic module for signing 
-(ExternalMu-ML-DSA.Sign). By implementing ExternalMu-ML-DSA.Prehash in software and 
-ExternalMu-ML-DSA.Sign in an hardware cryptographic module, the cryptographic workload 
+discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step
+(ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the
+pre-hashed message (mu) is sent to the hardware cryptographic module for signing
+(ExternalMu-ML-DSA.Sign). By implementing ExternalMu-ML-DSA.Prehash in software and
+ExternalMu-ML-DSA.Sign in an hardware cryptographic module, the cryptographic workload
 is efficiently distributed, making it practical for high-volume signing operations even
 in memory-constrained cryptographic modules.
+
+The main advantage of this method is that, unlike HashML-DSA, the ExternalMu-ML-DSA approach
+is interoperable with the standard version of ML-DSA that does not use pre-hashing. This means
+a message can be signed using ML-DSA.Sign, and the verifier can independently compute mu and use
+ExternalMu-ML-DSA.Verify for verification -- or vice versa. In both cases, the verifier
+does not need to know whether the signer used internal or external pre-hashing, as the resulting
+signature and verification process remain the same.
 
 # Additional Considerations for PQC Use in Constrained Devices
 
