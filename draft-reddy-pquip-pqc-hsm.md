@@ -47,6 +47,10 @@ author:
     fullname: Ben Salter
     organization: UK National Cyber Security Centre
     email: ben.s3@ncsc.gov.uk
+ -
+    fullname: Kris Kwiatkowski
+    organization: PQShield
+    email: kris@amongbytes.com
 
 normative:
 
