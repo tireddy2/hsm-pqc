@@ -85,10 +85,10 @@ informative:
 This document offers guidance on incorporating Post-Quantum Cryptography (PQC) into
 resource-constrained devices, including IoT devices and lightweight Hardware Security
 Modules (HSMs), which operate under tight limitations on compute power, memory, storage,
-and energy. It highlights the role of the Root of Trust in enabling secure operations,
-including seed-based key generation to reduce the need for persistent storage, efficient
-approaches to managing ephemeral keys, and methods for offloading cryptographic tasks in
-low-resource environments. Additionally, it examines how PQC affects firmware update
+and energy. It highlights how the Root of Trust acts as the foundation for secure operations,
+enabling features such as seed-based key generation to reduce the need for persistent storage, 
+efficient approaches to managing ephemeral keys, and methods for offloading cryptographic tasks 
+in low-resource environments. Additionally, it examines how PQC affects firmware update
 mechanisms in such constrained systems.
 
 --- middle
@@ -122,7 +122,7 @@ they are not covered in this version of the document. Future revisions may expan
 scope to include additional PQC algorithms.
 
 # Key Management in Constrained Devices for PQC
-The embedded cryptographic components used in IoT are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
+The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
@@ -246,14 +246,15 @@ only the seed (not the full private key) needs to be stored. The ephemeral seed 
 deleted immediately after the key pair is generated to prevent potential leakage or
 misuse.
 
-Furthermore, once the shared secret is derived, the private key must also be deleted.
+Furthermore, once the shared secret is derived, the private key will have to be deleted.
 Since the private key resides in the constrained cryptographic module, removing it
 optimizes memory usage, reducing the footprint of PQC key material in constrained HSMs.
 
-Additionally, ephemeral keys should not be reused across different algorithm suites and
-sessions. Each ephemeral key-pair must be uniquely associated with a specific key exchange
-instance to prevent cryptographic vulnerabilities, such as cross-protocol attacks or
-unintended key reuse.
+Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended 
+to be unique for each key exchange instance and kept separate across connections (e.g., TLS). 
+Reusing them across different connections (e.g., in TLS) can create security and privacy issues.
+These risks are discussed in more detail in the Security Considerations of 
+{{?I-D.ietf-tls-hybrid-design}}.
 
 Constrained devices implementing PQC ephemeral key management will have to:
 
@@ -362,8 +363,14 @@ and distribute malicious updates.
 ## Post-quantum Firmware Authentication
 
 To ensure the integrity and authenticity of firmware updates, constrained devices will
-have to adopt PQC digital signature schemes for code signing. Recommended post-quantum
-algorithms include:
+have to adopt PQC digital signature schemes for code signing. These algorithms must provide 
+long-term security, operate efficiently in low-resource environments, and be compatible with 
+secure update mechanisms, such as the firmware update architecture for IoT 
+described in {{!RFC9019}}.
+
+The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms in {{?I-D.ietf-suit-mti}}, which includes the use of HSS-LMS.
+
+Recommended post-quantum algorithms include:
 
 * SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness
   assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures. Given that the first vulnerabilities in PQC algorithms are more likely to arise from implementation flaws rather than fundamental mathematical weaknesses, SLH-DSA is still susceptible to attacks if not properly implemented.
