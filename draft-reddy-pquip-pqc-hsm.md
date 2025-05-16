@@ -36,7 +36,7 @@ author:
     city: Bangalore
     region: Karnataka
     country: India
-    email: "kondtir@gmail.com"
+    email: "k.tirumaleswar_reddy@nokia.com"
  -
     fullname: Dan Wing
     organization: Cloud Software Group Holdings, Inc.
@@ -239,21 +239,18 @@ In protocols like TLS and IPsec, ephemeral keys are used for key exchange. Given
 increased size of PQC key material, ephemeral key management will have to be optimized for
 both security and performance.
 
-For PQC KEMs, ephemeral key-pairs must be generated from an ephemeral seed, which needs to
-be securely stored temporarily and erased after use. This approach ensures that ephemeral
-key generation is deterministic and minimizes storage overhead in constrained devices, as
-only the seed (not the full private key) needs to be stored. The ephemeral seed must be
-deleted immediately after the key pair is generated to prevent potential leakage or
-misuse.
-
-Furthermore, once the shared secret is derived, the private key will have to be deleted.
-Since the private key resides in the constrained cryptographic module, removing it
-optimizes memory usage, reducing the footprint of PQC key material in constrained HSMs.
+For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used 
+immediately during key generation and then discarded. Furthermore, once the shared secret is 
+derived, the private key will have to be deleted. Since the private key resides in the 
+constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of 
+PQC key material in constrained HSMs. This ensures that that no unnecessary secrets 
+persist beyond their intended use.
 
 Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended 
 to be unique for each key exchange instance and kept separate across connections (e.g., TLS). 
-Reusing them across different connections (e.g., in TLS) can create security and privacy issues.
-These risks are discussed in more detail in the Security Considerations of 
+Deleting ephemeral keying material after use not only optimizes memory usage but also ensures 
+that key material cannot be reused across connections, which would otherwise introduce security and 
+privacy issues. These risks are discussed in more detail in the Security Considerations of 
 {{?I-D.ietf-tls-hybrid-design}}.
 
 Constrained devices implementing PQC ephemeral key management will have to:
