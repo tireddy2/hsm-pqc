@@ -210,27 +210,24 @@ and discarded immediately after use. However, storing the expanded private key m
 more practical solution in time-sensitive applications or for devices that frequently
 perform cryptographic operations.
 
-### Secure Exporting of Seeds
+### Exporting Seeds and Private Keys
 
-   Given the potential for hardware failures or the end-of-life of constrained devices, it
-is essential to plan for backup and recovery of the cryptographic seeds. Constrained
+   Given the potential for hardware failures or the end-of-life of devices containing keys, it
+is essential to plan for backup and recovery of the cryptographic seeds and private keys. Constrained
 devices should support secure seed backup mechanisms, ideally leveraging encrypted storage
 and ensuring that the backup data is protected from unauthorized access. In a disaster
-recovery scenario, the seed should be recoverable to enable the re-derivation of the
-private key, provided the proper security measures are in place to prevent unauthorized
+recovery scenario, the seeds and private keys should be recoverable private key, provided the proper security measures are in place to prevent unauthorized
 extraction.
 
-   For secure exporting of seeds, PQC encryption algorithms, such as ML-KEM, should be
+   For secure exporting of seeds and private keys, AES-256 (or higher) should be
 used to encrypt the seed before export. This ensures that the seed remains protected even
-if the export process is vulnerable to quantum attacks. The process for secure export
-should include:
+if the export process is vulnerable to quantum attacks.
 
-   - Encrypting the seed using a post-quantum encryption algorithm, such as ML-KEM, rather than relying on traditional encryption algorithms.
-   - Ensuring the exported seed is accessible only to authorized entities.
-   - Enforcing strict access controls and secure transport mechanisms to prevent unauthorized access during transfer.
+Operationally, the exported data and the AES key should both be
+protected against unauthorized access or modification.
 
-   The seed generation, storage, and usage should remain entirely within the cryptographic
-module. This minimizes the risk of exposure and ensures compliance with established
+   The encryption and the decryption of the seeds and private keys should remain entirely within the cryptographic
+modules, to minimizes the risk of exposure and ensures compliance with established
 security guidelines.
 
 # Ephemeral Key Management
