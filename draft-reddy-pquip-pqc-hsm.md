@@ -86,8 +86,8 @@ This document offers guidance on incorporating Post-Quantum Cryptography (PQC) i
 resource-constrained devices, including IoT devices and lightweight Hardware Security
 Modules (HSMs), which operate under tight limitations on compute power, memory, storage,
 and energy. It highlights how the Root of Trust acts as the foundation for secure operations,
-enabling features such as seed-based key generation to reduce the need for persistent storage, 
-efficient approaches to managing ephemeral keys, and methods for offloading cryptographic tasks 
+enabling features such as seed-based key generation to reduce the need for persistent storage,
+efficient approaches to managing ephemeral keys, and methods for offloading cryptographic tasks
 in low-resource environments. Additionally, it examines how PQC affects firmware update
 mechanisms in such constrained systems.
 
@@ -138,10 +138,16 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
 ### Seed Storage
 
+Some PQ key exchange mechanisms use a seed to generate their private keys (e.g., ML-KEM,
+McEliece, and HQC), and those seeds are smaller than private keys, saving storage space.
+Some implementations may choose to retain the (small) seed rather than the (larger)
+private key.  As the private key is necessary for cryptographic operations, it can
+be derived from the seed when needed or retained in a cache within the security module.
+
    Seeds must be securely stored within a cryptographic module of the device whether
-hardware or software-based to protect against unauthorized access. Since the seed can be
-used to deterministically derive the private key, it must be safeguarded with the same
-level of protection as the private key itself. For example, according to {{ML-DSA}}
+hardware or software-based to protect against unauthorized access. Since the seed can derive
+the private key, it must be safeguarded with the same
+level of protection as a private key. For example, according to {{ML-DSA}}
 Section 3.6.3, the seed ξ generated during ML-DSA.KeyGen can be stored for later use with
 ML-DSA.KeyGen_internal.
 
@@ -187,8 +193,7 @@ creates a potential gap in interoperability.
 
    If the seed is not securely stored at the time of key generation, it is permanently
 lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function is designed to ensure that the expanded
-private key can be deterministically derived from the seed, but the reverse operation,
+cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
 deriving the original seed from the expanded key is computationally infeasible.
 
 ### Efficient Key Derivation
@@ -239,18 +244,18 @@ In protocols like TLS and IPsec, ephemeral keys are used for key exchange. Given
 increased size of PQC key material, ephemeral key management will have to be optimized for
 both security and performance.
 
-For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used 
-immediately during key generation and then discarded. Furthermore, once the shared secret is 
-derived, the private key will have to be deleted. Since the private key resides in the 
-constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of 
-PQC key material in constrained HSMs. This ensures that that no unnecessary secrets 
+For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used
+immediately during key generation and then discarded. Furthermore, once the shared secret is
+derived, the private key will have to be deleted. Since the private key resides in the
+constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of
+PQC key material in constrained HSMs. This ensures that that no unnecessary secrets
 persist beyond their intended use.
 
-Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended 
-to be unique for each key exchange instance and kept separate across connections (e.g., TLS). 
-Deleting ephemeral keying material after use not only optimizes memory usage but also ensures 
-that key material cannot be reused across connections, which would otherwise introduce security and 
-privacy issues. These risks are discussed in more detail in the Security Considerations of 
+Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended
+to be unique for each key exchange instance and kept separate across connections (e.g., TLS).
+Deleting ephemeral keying material after use not only optimizes memory usage but also ensures
+that key material cannot be reused across connections, which would otherwise introduce security and
+privacy issues. These risks are discussed in more detail in the Security Considerations of
 {{?I-D.ietf-tls-hybrid-design}}.
 
 Constrained devices implementing PQC ephemeral key management will have to:
@@ -360,9 +365,9 @@ and distribute malicious updates.
 ## Post-quantum Firmware Authentication
 
 To ensure the integrity and authenticity of firmware updates, constrained devices will
-have to adopt PQC digital signature schemes for code signing. These algorithms must provide 
-long-term security, operate efficiently in low-resource environments, and be compatible with 
-secure update mechanisms, such as the firmware update architecture for IoT 
+have to adopt PQC digital signature schemes for code signing. These algorithms must provide
+long-term security, operate efficiently in low-resource environments, and be compatible with
+secure update mechanisms, such as the firmware update architecture for IoT
 described in {{!RFC9019}}.
 
 The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms in {{?I-D.ietf-suit-mti}}, which includes the use of HSS-LMS.
