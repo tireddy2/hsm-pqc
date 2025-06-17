@@ -138,10 +138,16 @@ To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
 ### Seed Storage
 
+Some PQ key exchange mechanisms use a seed to generate their private keys (e.g., ML-KEM,
+McEliece, and HQC), and those seeds are smaller than private keys, saving storage space.
+Some implementations may choose to retain the (small) seed rather than the (larger)
+private key.  As the private key is necessary for cryptographic operations, it can
+be derived from the seed when needed or retained in a cache within the security module.
+
    Seeds must be securely stored within a cryptographic module of the device whether
-hardware or software-based to protect against unauthorized access. Since the seed can be
-used to deterministically derive the private key, it must be safeguarded with the same
-level of protection as the private key itself. For example, according to {{ML-DSA}}
+hardware or software-based to protect against unauthorized access. Since the seed can derive
+the private key, it must be safeguarded with the same
+level of protection as a private key. For example, according to {{ML-DSA}}
 Section 3.6.3, the seed ξ generated during ML-DSA.KeyGen can be stored for later use with
 ML-DSA.KeyGen_internal.
 
@@ -187,8 +193,7 @@ creates a potential gap in interoperability.
 
    If the seed is not securely stored at the time of key generation, it is permanently
 lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function is designed to ensure that the expanded
-private key can be deterministically derived from the seed, but the reverse operation,
+cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
 deriving the original seed from the expanded key is computationally infeasible.
 
 ### Efficient Key Derivation
