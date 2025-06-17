@@ -387,7 +387,10 @@ provide strong security assurances over extended periods. ML-DSA is not included
 list because it is a lattice-based signature scheme, making it susceptible to potential
 advances in quantum and classical attacks on structured lattices. The long-term security
 of ML-DSA depends on the continued hardness of lattice-based problems, which remain an
-active area of research. Similarly, although SLH-DSA (Stateless Hash-Based Digital Signature Algorithm),
+active area of research. In addition, since ML-DSA implementations are still maturing, 
+relying on hash-based signatures can be a more reliable and production-ready option 
+for firmware authentication where long-term cryptographic stability is critical. 
+Similarly, although SLH-DSA (Stateless Hash-Based Digital Signature Algorithm),
 a stateless hash-based signature scheme, avoids the complexity of state management, its
 relatively large signature sizes make it less practical for constrained devices with memory
 limitations. In contrast, HSS-LMS and XMSS are based on well-studied
