@@ -396,6 +396,15 @@ lattice hardness. Given this uncertainty, use of a hash-based signature
 may be preferable to ML-DSA for firmware authentication, where cryptographic stability
 over a long lifetime is a critical requirement.
 
+## Hybrid signature approaches
+
+To enable secure migration from traditional to post-quantum security, hybrid signature methods can be used for
+firmware authentication. Parallel signatures, where a traditional and a post-quantum signature are generated and
+attached separately, is simple to implement, requires minimal changes to existing signing, and aligns well with
+current secure boot and update architectures.
+
+Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows. 
+
 # Security Considerations
 
 The security considerations for key management in constrained devices for PQC focus on the
