@@ -245,7 +245,7 @@ For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is 
 immediately during key generation and then discarded. Furthermore, once the shared secret is
 derived, the private key will have to be deleted. Since the private key resides in the
 constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of
-PQC key material in constrained HSMs. This ensures that that no unnecessary secrets
+PQC key material in the cryptographic module. This ensures that that no unnecessary secrets
 persist beyond their intended use.
 
 Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended
@@ -371,9 +371,6 @@ The Software Updates for Internet of Things (SUIT) working group is defining man
 
 Recommended post-quantum algorithms include:
 
-* SLH-DSA (Stateless Hash-Based Digital Signature Algorithm): SLH-DSA does not introduce any new hardness
-  assumptions beyond those inherent to its underlying hash functions. It builds upon established foundations in cryptography, making it a reliable and robust digital signature scheme for a post-quantum world. While attacks on lattice-based schemes like ML-DSA can compromise their security, SLH-DSA will remain unaffected by these attacks due to its distinct mathematical foundations. This ensures the ongoing security of systems and protocols that use SLH-DSA for digital signatures. Given that the first vulnerabilities in PQC algorithms are more likely to arise from implementation flaws rather than fundamental mathematical weaknesses, SLH-DSA is still susceptible to attacks if not properly implemented.
-
 * HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing
   long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
 
@@ -390,9 +387,12 @@ provide strong security assurances over extended periods. ML-DSA is not included
 list because it is a lattice-based signature scheme, making it susceptible to potential
 advances in quantum and classical attacks on structured lattices. The long-term security
 of ML-DSA depends on the continued hardness of lattice-based problems, which remain an
-active area of research. In contrast, SLH-DSA, HSS-LMS, and XMSS are based on well-studied
+active area of research. Similarly, although SLH-DSA (Stateless Hash-Based Digital Signature Algorithm),
+a stateless hash-based signature scheme, avoids the complexity of state management, its
+relatively large signature sizes make it less practical for constrained devices with memory
+limitations. In contrast, HSS-LMS and XMSS are based on well-studied
 hash functions, ensuring their security does not rely on unproven assumptions about
-lattice hardness. Given this uncertainty, use of a hash-based signature such as SLH-DSA
+lattice hardness. Given this uncertainty, use of a hash-based signature
 may be preferable to ML-DSA for firmware authentication, where cryptographic stability
 over a long lifetime is a critical requirement.
 
