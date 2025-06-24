@@ -76,6 +76,10 @@ informative:
      title: "FIPS-205: Stateless Hash-Based Digital Signature Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf
      date: false
+  FN-DSA:
+     title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
+     target: https://falcon-sign.info/falcon.pdf
+     date: false
   REC-KEM:
     title: Recommendations for Key-Encapsulation Mechanisms
     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-227.ipd.pdf
@@ -344,6 +348,39 @@ management policies. This includes the ability to:
 
 * Reconfigure cryptographic profile of the device via firmware updates.
 
+## Key Sizes of Post-Quantum Algorithms
+
+The key sizes of post-quantum algorithms are generally larger than those of traditional
+cryptographic algorithms. This increase in key size is a significant consideration for
+constrained devices, which often have limited memory and storage capacity. For example,
+the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
+increased memory usage and slower performance in constrained environments.
+
+The following table provides the key sizes of some instantiations of ML-DSA, ML-KEM, FN-DSA
+and SLH-DSA. For comparision we also include the key sizes for X25519 and ED25519, which
+are classical schemes widely used in constrained environments.
+
+| Algorithm          | Type             | Size (bytes)     |
+|--------------------|------------------|------------------|
+| ML-DSA/65          | Public Key       | 1952             |
+|                    | Private Key      | 4032             |
+|                    | Signature        | 3309             |
+| SLH-DSA-SHA2-192s  | Public Key       | 48               |
+|                    | Private Key      | 96               |
+|                    | Signature        | 16224            |
+| FN-DSA-512         | Public Key       | 897              |
+|                    | Private Key      | 1281             |
+|                    | Signature        | 666              |
+| ML-KEM/768         | Public Key       | 1568             |
+|                    | Shared Secret    | 32               |
+| X25519             | Public Key       | 32               |
+|                    | Shared Secret    | 32               |
+| Ed25519            | Public Key       | 32               |
+|                    | Signature        | 64               |
+
+Full key sizes for ML-DSA, ML-KEM, FN-DSA and SLH-DSA are specified in {{ML-DSA}}, {{ML-KEM}}, {{FN-DSA}}
+and {{SLH-DSA}} respectively.
+
 # Post-quantum Firmware Upgrades for Constrained Devices
 
 Constrained devices deployed in the field require periodic firmware upgrades to patch
@@ -387,9 +424,9 @@ provide strong security assurances over extended periods. ML-DSA is not included
 list because it is a lattice-based signature scheme, making it susceptible to potential
 advances in quantum and classical attacks on structured lattices. The long-term security
 of ML-DSA depends on the continued hardness of lattice-based problems, which remain an
-active area of research. In addition, since ML-DSA implementations are still maturing, 
-relying on hash-based signatures can be a more reliable and production-ready option 
-for firmware authentication where long-term cryptographic stability is critical. 
+active area of research. In addition, since ML-DSA implementations are still maturing,
+relying on hash-based signatures can be a more reliable and production-ready option
+for firmware authentication where long-term cryptographic stability is critical.
 Similarly, although SLH-DSA (Stateless Hash-Based Digital Signature Algorithm),
 a stateless hash-based signature scheme, avoids the complexity of state management, its
 relatively large signature sizes make it less practical for constrained devices with memory
@@ -406,7 +443,7 @@ firmware authentication. Parallel signatures, where a traditional and a post-qua
 attached separately, is simple to implement, requires minimal changes to existing signing, and aligns well with
 current secure boot and update architectures.
 
-Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows. 
+Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows.
 
 # Security Considerations
 
