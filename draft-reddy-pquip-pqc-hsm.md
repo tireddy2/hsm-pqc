@@ -80,6 +80,14 @@ informative:
      title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
      target: https://falcon-sign.info/falcon.pdf
      date: false
+  Stream-SPHINCS:
+     title: "Streaming SPHINCS+ for Embedded Devices using the Example of TPMs"
+     target: "https://eprint.iacr.org/2021/1072.pdf"
+     date: false
+  BosRS22:
+     title: "Dilithium for Memory Constrained Devices"
+     target: "https://eprint.iacr.org/2022/323.pdf"
+     date: false
   REC-KEM:
     title: Recommendations for Key-Encapsulation Mechanisms
     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-227.ipd.pdf
@@ -348,7 +356,7 @@ management policies. This includes the ability to:
 
 * Reconfigure cryptographic profile of the device via firmware updates.
 
-## Key Sizes of Post-Quantum Algorithms
+## Key Sizes of Post-Quantum Algorithms {#sec-key-sizes}
 
 The key sizes of post-quantum algorithms are generally larger than those of traditional
 cryptographic algorithms. This increase in key size is a significant consideration for
@@ -358,7 +366,7 @@ increased memory usage and slower performance in constrained environments.
 
 The following table provides the key sizes of some instantiations of ML-DSA, ML-KEM, FN-DSA
 and SLH-DSA. For comparision we also include the key sizes for X25519 and ED25519, which
-are classical schemes widely used in constrained environments.
+are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
 |--------------------|------------------|------------------|
@@ -448,6 +456,59 @@ attached separately, is simple to implement, requires minimal changes to existin
 current secure boot and update architectures.
 
 Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows.
+
+# Impact of PQC Authentication on Constrained Devices
+
+In constrained environments, devices are often assumed to be clients initiating outbound connections, where they
+authenticate themselves to servers using certificates or raw public keys ({{!RFC7250}}). However, many devices also
+act as servers, enforce local authentication policies, or verify digital signatures on firmware, certificates, or
+commands. These use cases demand inbound authentication capabilities and significantly intersect with the challenges
+of adopting post-quantum cryptography (PQC). Further, verification of digital signatures is a critical function for
+constrained devices in both client and server roles.
+
+In constrained environments, devices are typically assumed to function as clients that initiate outbound connections,
+authenticating to servers using certificates or raw public keys ({{!RFC7250}}). However, some devices also serve in
+server roles, enforcing local authentication policies. These scenarios require support for both outbound and inbound
+authentication, and both roles face significant challenges when adopting post-quantum cryptography (PQC). Additionally,
+verifying digital signatures—such as during secure boot or firmware updates—is a critical operation for constrained devices,
+regardless of whether they act as clients or servers.
+
+While specific deployment scenarios may differ, the fundamental technical impacts of PQC authentication in constrained devices can be summarized into three main areas:
+
+* Larger Signatures and Certificate Sizes
+
+   Post-quantum signature schemes typically produce much larger public keys and signatures than their traditional
+   counterparts. A comparison is provided in [PQC key sizes](#sec-key-sizes).
+
+   These larger artifacts introduce several challenges. For example, certificate chains with PQC public keys
+   require more storage, and trust anchors - particularly for schemes like SLH-DSA - may be too large to embed in
+   constrained ROM.
+
+   Furthermore, validating signed payloads or commands increases network bandwidth requirements. In the case of large
+   hash-based signatures, implementations may adopt streaming verification, where only parts of the message are
+   processed at a time to reduce memory usage. An example of such an approach for SLH-DSA is described in
+   {{Stream-SPHINCS}}.
+
+* Increased RAM usage and performance profile.
+
+   Post-quantum signature verification often demands significantly more RAM than traditional schemes used for
+   asymmetric cryptography. For example, ML-DSA-65 in its high-performance configuration may require over 68 KB of
+   memory during signing and up to 10 KB during verification on Cortex-M4-class devices.
+
+   This poses challenges for use cases such as firmware verification (e.g. secure boot) and certificate validation
+   during TLS handshakes or device attestation.
+
+   Several memory-optimized implementations exist (see {{BosRS22}}), but they typically trade memory savings for
+   slower performance. For instance, the ML-DSA.Sign operation can be implemented within 8 KB of RAM, though at
+   the cost of significantly increased runtime. Conversely, ML-DSA.Verify can be performed in as little as 3 KB of
+   RAM without a major performance penalty.
+
+   Devices with 8 - 16 KB of available RAM must often balance performance against feasibility when integrating PQC
+   signature verification.
+
+When constrained devices must authenticate inbound connections, validate commands, or verify stored data, PQC authentication
+imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
+These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
 
 # Security Considerations
 
