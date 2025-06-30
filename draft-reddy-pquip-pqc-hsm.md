@@ -427,14 +427,18 @@ of ML-DSA depends on the continued hardness of lattice-based problems, which rem
 active area of research. In addition, since ML-DSA implementations are still maturing,
 relying on hash-based signatures can be a more reliable and production-ready option
 for firmware authentication where long-term cryptographic stability is critical.
-Similarly, although SLH-DSA (Stateless Hash-Based Digital Signature Algorithm),
-a stateless hash-based signature scheme, avoids the complexity of state management, its
-relatively large signature sizes make it less practical for constrained devices with memory
-limitations. In contrast, HSS-LMS and XMSS are based on well-studied
-hash functions, ensuring their security does not rely on unproven assumptions about
-lattice hardness. Given this uncertainty, use of a hash-based signature
-may be preferable to ML-DSA for firmware authentication, where cryptographic stability
-over a long lifetime is a critical requirement.
+
+Hash-based signature schemes may be preferable to ML-DSA for firmware authentication,
+particularly in scenarios where long-term cryptographic stability is a critical
+requirement. Schemes such as SLH-DSA, HSS-LMS, and XMSS are built on well-understood
+hash functions, and their security does not rely on unproven assumptions like the
+hardness of lattice problems.
+
+While SLH-DSA benefits from being stateless and avoids the complexity of state management,
+its large signature sizes make it less suitable for memory-constrained devices. In contrast,
+HSS-LMS and XMSS offer significantly smaller signatures and can achieve efficient
+verification times, making them more practical choices for constrained environments
+where performance and memory usage are key concerns.
 
 ## Hybrid signature approaches
 
