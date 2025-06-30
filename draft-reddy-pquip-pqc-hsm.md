@@ -468,7 +468,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
    counterparts. A comparison is provided in [PQC key sizes](#sec-key-sizes).
 
    These larger artifacts introduce several challenges. For example, certificate chains with PQC public keys
-   require more storage, and trust anchors—particularly for schemes like SLH-DSA—may be too large to embed in
+   require more storage, and trust anchors--particularly for schemes like SLH-DSA--may be too large to embed in
    constrained ROM.
 
    Furthermore, validating signed payloads or commands increases network bandwidth requirements. In the case of large
