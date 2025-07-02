@@ -459,18 +459,11 @@ Other hybrid techniques, such as cross-linked signatures (where signatures cover
 
 # Impact of PQC Authentication on Constrained Devices
 
-In constrained environments, devices are often assumed to be clients initiating outbound connections, where they
-authenticate themselves to servers using certificates or raw public keys ({{!RFC7250}}). However, many devices also
-act as servers, enforce local authentication policies, or verify digital signatures on firmware, certificates, or
-commands. These use cases demand inbound authentication capabilities and significantly intersect with the challenges
-of adopting post-quantum cryptography (PQC). Further, verification of digital signatures is a critical function for
-constrained devices in both client and server roles.
-
 In constrained environments, devices are typically assumed to function as clients that initiate outbound connections,
 authenticating to servers using certificates or raw public keys ({{!RFC7250}}). However, some devices also serve in
 server roles, enforcing local authentication policies. These scenarios require support for both outbound and inbound
 authentication, and both roles face significant challenges when adopting post-quantum cryptography (PQC). Additionally,
-verifying digital signatures—such as during secure boot or firmware updates—is a critical operation for constrained devices,
+verifying digital signatures such as during secure boot or firmware updates is a critical operation for constrained devices,
 regardless of whether they act as clients or servers.
 
 While specific deployment scenarios may differ, the fundamental technical impacts of PQC authentication in constrained devices can be summarized into three main areas:
@@ -496,8 +489,11 @@ While specific deployment scenarios may differ, the fundamental technical impact
    memory during signing and up to 10 KB during verification on Cortex-M4-class devices.
 
    This poses challenges for use cases such as firmware verification (e.g. secure boot) and certificate validation
-   during TLS handshakes or device attestation.
-
+   during TLS handshakes or the generation of signed claims about the devices's hardware and software state, a process generally referred
+   to as device attestation. As part of this remote attestation procedure {{!RFC9334}}, the device will need to present such claims
+   to a remote peer, signed using an attestation key. To remain secure against CRQCs, the attestation mechanism must also
+   employ quantum-safe cryptographic primitives.
+   
    Several memory-optimized implementations exist (see {{BosRS22}}), but they typically trade memory savings for
    slower performance. For instance, the ML-DSA.Sign operation can be implemented within 8 KB of RAM, though at
    the cost of significantly increased runtime. Conversely, ML-DSA.Verify can be performed in as little as 3 KB of
