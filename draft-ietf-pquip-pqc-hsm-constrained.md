@@ -127,6 +127,8 @@ also discusses considerations for ephemeral key generation in protocols like TLS
 IPsec, along with techniques to optimize PQC signature operations to enhance performance
 within constrained crytographic modules.
 
+This document focuses on post‑quantum cryptography in constrained devices, specifically on the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA and on stateful hash‑based signatures in the context of firmware signing, Future revisions may expand the scope to include additional PQC algorithms.
+
 # Key Management in Constrained Devices for PQC
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
 
@@ -409,7 +411,7 @@ Stateful hash-based signature schemes, such as HSS-LMS or the similar XMSS {{RFC
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier. 
-{{?I-D.wiggers-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
+{{?I-D.ietf-pquip-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
 Other post-quantum signature algorithms may also be viable for firmware signing:
 
@@ -422,8 +424,6 @@ It is more performant than SLH-DSA, with significantly faster signing and verifi
 This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
 Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
-
-* EDNOTE: Could mention FN-DSA/Falcon here? The constant-time concerns only applies to real-time signing and not verification so wouldn't apply here?
 
 ## Hybrid signature approaches
 
