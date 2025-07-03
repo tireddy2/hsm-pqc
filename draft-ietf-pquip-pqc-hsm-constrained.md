@@ -406,7 +406,7 @@ These algorithms must provide long-term security, operate efficiently in low-res
 The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms for IoT devices in {{?I-D.ietf-suit-mti}}, which recommends use of HSS-LMS {{RFC8554}} to secure software devices.
 
 Stateful hash-based signature schemes, such as HSS-LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates.
-Their security is based on the security of the underlying hash function, which is typically well-understood.
+Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier. 
 {{?I-D.wiggers-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
