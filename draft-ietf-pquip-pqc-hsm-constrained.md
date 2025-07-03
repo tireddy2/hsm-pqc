@@ -236,15 +236,15 @@ and ensuring that the backup data is protected from unauthorized access. In a di
 recovery scenario, the seeds and private keys should be recoverable private key, provided the proper security measures are in place to prevent unauthorized
 extraction.
 
-   For secure exporting of seeds and private keys, AES-256 (or higher) should be
+   For secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, should be
 used to encrypt the seed before export. This ensures that the seed remains protected even
 if the export process is vulnerable to quantum attacks.
 
 Operationally, the exported data and the AES key should both be
 protected against unauthorized access or modification.
 
-   The encryption and the decryption of the seeds and private keys should remain entirely within the cryptographic
-modules, to minimizes the risk of exposure and ensures compliance with established
+   The encryption and the decryption of the seeds and private keys should take place entirely within the cryptographic
+modules, to minimize the risk of exposure and ensure compliance with established
 security guidelines.
 
 # Ephemeral Key Management
@@ -255,12 +255,12 @@ both security and performance.
 
 For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used
 immediately during key generation and then discarded. Furthermore, once the shared secret is
-derived, the private key will have to be deleted. Since the private key resides in the
+derived, the ephemeral private key will have to be deleted. Since the private key resides in the
 constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of
 PQC key material in the cryptographic module. This ensures that that no unnecessary secrets
 persist beyond their intended use.
 
-Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms are intended
+Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms, are intended
 to be unique for each key exchange instance and kept separate across connections (e.g., TLS).
 Deleting ephemeral keying material after use not only optimizes memory usage but also ensures
 that key material cannot be reused across connections, which would otherwise introduce security and
@@ -370,7 +370,7 @@ are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
 |--------------------|------------------|------------------|
-| ML-DSA/65          | Public Key       | 1952             |
+| ML-DSA-65          | Public Key       | 1952             |
 |                    | Private Key      | 4032             |
 |                    | Signature        | 3309             |
 | SLH-DSA-SHA2-192s  | Public Key       | 48               |
@@ -379,7 +379,7 @@ are traditional schemes widely used in constrained environments.
 | FN-DSA-512         | Public Key       | 897              |
 |                    | Private Key      | 1281             |
 |                    | Signature        | 666              |
-| ML-KEM/768         | Public Key       | 1568             |
+| ML-KEM-768         | Public Key       | 1568             |
 |                    | Shared Secret    | 32               |
 | X25519             | Public Key       | 32               |
 |                    | Shared Secret    | 32               |
@@ -471,7 +471,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
 * Larger Signatures and Certificate Sizes
 
    Post-quantum signature schemes typically produce much larger public keys and signatures than their traditional
-   counterparts. A comparison is provided in [PQC key sizes](#sec-key-sizes).
+   counterparts. A comparison is provided in {{sec-key-sizes}}.
 
    These larger artifacts introduce several challenges. For example, certificate chains with PQC public keys
    require more storage, and trust anchors - particularly for schemes like SLH-DSA - may be too large to embed in
