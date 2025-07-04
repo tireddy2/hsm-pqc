@@ -127,7 +127,7 @@ also discusses considerations for ephemeral key generation in protocols like TLS
 IPsec, along with techniques to optimize PQC signature operations to enhance performance
 within constrained crytographic modules.
 
-This document focuses on post‑quantum cryptography in constrained devices, specifically on the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA and on stateful hash‑based signatures in the context of firmware signing, Future revisions may expand the scope to include additional PQC algorithms.
+This document focuses on post‑quantum cryptography in constrained devices, specifically on the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA and on stateful hash‑based signatures in the context of firmware signing. Future revisions may expand the scope to include additional PQC algorithms.
 
 # Key Management in Constrained Devices for PQC
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
