@@ -127,11 +127,7 @@ also discusses considerations for ephemeral key generation in protocols like TLS
 IPsec, along with techniques to optimize PQC signature operations to enhance performance
 within constrained crytographic modules.
 
-This document focuses on the use of PQC algorithms in constrained devices, specifically
-the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA. While other PQC
-algorithms, such as stateful hash-based signatures, also provide post-quantum security,
-they are not covered in this version of the document. Future revisions may expand the
-scope to include additional PQC algorithms.
+This document focuses on post‑quantum cryptography in constrained devices, specifically on the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA and on stateful hash‑based signatures in the context of firmware signing. Future revisions may expand the scope to include additional PQC algorithms.
 
 # Key Management in Constrained Devices for PQC
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
@@ -406,47 +402,28 @@ and distribute malicious updates.
 
 ## Post-quantum Firmware Authentication
 
-To ensure the integrity and authenticity of firmware updates, constrained devices will
-have to adopt PQC digital signature schemes for code signing. These algorithms must provide
-long-term security, operate efficiently in low-resource environments, and be compatible with
-secure update mechanisms, such as the firmware update architecture for IoT
-described in {{!RFC9019}}.
+To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
+These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms in {{?I-D.ietf-suit-mti}}, which includes the use of HSS-LMS.
+The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms for IoT devices in {{?I-D.ietf-suit-mti}}, which recommends use of HSS-LMS {{RFC8554}} to secure software devices.
 
-Recommended post-quantum algorithms include:
+Stateful hash-based signature schemes, such as HSS-LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer can achieve efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
+Their security is based on the security of the underlying hash function, which is well-understood.
+A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
+However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier. 
+{{?I-D.ietf-pquip-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
-* HSS-LMS (Hierarchical Signature System - Leighton-Micali Signature): A hash-based signature scheme, providing
-  long-term security and efficient key management for firmware authentication (see {{REC-SHS}}).
+Other post-quantum signature algorithms may also be viable for firmware signing:
 
-* XMSS (eXtended Merkle Signature Scheme): Another stateful hash-based signature scheme similar to HSS-LMS
-  {{RFC8391}}. XMSS signatures are slightly shorter than HSS-LMS signatures for equivalent security. However, HSS-LMS provides performance advantages and HSS-LMS is considered
-  simpler (see Section 10 of {{RFC8554}}).
+* SLH-DSA, a stateless hash-based signature specified in {{SLH-DSA}}, also has well-understood security based on the security of its underlying hash function, and additionally doesn't have the complexities associated with state management that HSS and XMSS have.
+However, signature generation and verification are comparatively slow, and signature sizes are generally larger than other post-quantum algorithms.
+SLH-DSA's suitability as a firmware signing algorithm will depend on the capabilities of the underlying hardware.
 
-Firmware images can be signed using one of these post-quantum algorithms before being
-distributed to constraied devices. {{?I-D.wiggers-hbs-state}} discusses various strategies
-for a correct state and backup management for stateful hash-based signatures.
-
-Firmware images often have a long lifetime, requiring cryptographic algorithms that
-provide strong security assurances over extended periods. ML-DSA is not included in this
-list because it is a lattice-based signature scheme, making it susceptible to potential
-advances in quantum and classical attacks on structured lattices. The long-term security
-of ML-DSA depends on the continued hardness of lattice-based problems, which remain an
-active area of research. In addition, since ML-DSA implementations are still maturing,
-relying on hash-based signatures can be a more reliable and production-ready option
-for firmware authentication where long-term cryptographic stability is critical.
-
-Hash-based signature schemes may be preferable to ML-DSA for firmware authentication,
-particularly in scenarios where long-term cryptographic stability is a critical
-requirement. Schemes such as SLH-DSA, HSS-LMS, and XMSS are built on well-understood
-hash functions, and their security does not rely on unproven assumptions like the
-hardness of lattice problems.
-
-While SLH-DSA benefits from being stateless and avoids the complexity of state management,
-its large signature sizes make it less suitable for memory-constrained devices. In contrast,
-HSS-LMS and XMSS offer significantly smaller signatures and can achieve efficient
-verification times, making them more practical choices for constrained environments
-where performance and memory usage are key concerns.
+* ML-DSA is a lattice-based signature algorithm specified in {{ML-DSA}}.
+It is more performant than SLH-DSA, with significantly faster signing and verification times, as well as shorter signatures.
+This will make it possible to implement on a wider range of constrained devices.
+The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
+Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
 
 ## Hybrid signature approaches
 
