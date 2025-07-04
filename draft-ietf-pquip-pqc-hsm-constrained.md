@@ -232,16 +232,20 @@ and ensuring that the backup data is protected from unauthorized access. In a di
 recovery scenario, the seeds and private keys should be recoverable private key, provided the proper security measures are in place to prevent unauthorized
 extraction.
 
-   For secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, should be
-used to encrypt the seed before export. This ensures that the seed remains protected even
-if the export process is vulnerable to quantum attacks.
+There are two distinct approaches to exporting private keys or seeds from a constrained device:
 
-Operationally, the exported data and the AES key should both be
-protected against unauthorized access or modification.
+#### Direct Transfer over TLS
 
-   The encryption and the decryption of the seeds and private keys should take place entirely within the cryptographic
-modules, to minimize the risk of exposure and ensure compliance with established
-security guidelines.
+In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module. 
+
+#### Export to Encrypted File
+
+In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
+
+Operationally, the exported data and the AES key should both be protected against unauthorized access or modification.
+
+#### Security Requirements for Export Operations
+The encryption and the decryption of the seeds and private keys should take place entirely within the cryptographic modules, to minimize the risk of exposure and ensure compliance with established security guidelines.
 
 # Ephemeral Key Management
 
