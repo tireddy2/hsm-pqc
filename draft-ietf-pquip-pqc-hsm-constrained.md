@@ -245,7 +245,7 @@ In more common constrained device scenarios, for secure exporting of seeds and p
 Operationally, the exported data and the AES key should both be protected against unauthorized access or modification.
 
 #### Security Requirements for Export Operations
-The encryption and the decryption of the seeds and private keys should take place entirely within the cryptographic modules, to minimize the risk of exposure and ensure compliance with established security guidelines.
+The encryption and decryption of seeds and private keys must occur entirely within the cryptographic modules to reduce the risk of exposure and ensure compliance to established security standards.
 
 # Ephemeral Key Management
 
