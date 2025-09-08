@@ -103,8 +103,8 @@ informative:
 This document provides guidance on integrating Post-Quantum Cryptography (PQC) into
 resource-constrained devices, such as IoT nodes and lightweight Hardware Security Modules
 (HSMs). These systems often operate with strict limitations on processing power, RAM, and
-flash memory, and may even be battery-powered. The document emphasizes the role of the Root
-of Trust as the basis for secure operations, supporting features such as seed-based key
+flash memory, and may even be battery-powered. The document emphasizes the role of hardware
+security as the basis for secure operations, supporting features such as seed-based key
 generation to minimize persistent storage, efficient handling of ephemeral keys, and the
 offloading of cryptographic tasks in low-resource environments. It also explores the
 implications of PQC on firmware update mechanisms in such constrained systems.
