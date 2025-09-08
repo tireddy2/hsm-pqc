@@ -56,7 +56,9 @@ normative:
 
 informative:
   RFC8554:
+  RFC5280:
   RFC8391:
+  IEEE-802.1AR: DOI.10.1109/IEEESTD.2020.9052099
   ML-KEM:
      title: "FIPS-203: Module-Lattice-based Key-Encapsulation Mechanism Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
@@ -76,6 +78,10 @@ informative:
      title: "FIPS-205: Stateless Hash-Based Digital Signature Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf
      date: false
+  HQC:
+     title: "Hamming Quasi-Cyclic"
+     target: https://pqc-hqc.org
+     date: false
   FN-DSA:
      title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
      target: https://falcon-sign.info/falcon.pdf
@@ -94,47 +100,64 @@ informative:
 
 --- abstract
 
-This document offers guidance on incorporating Post-Quantum Cryptography (PQC) into
-resource-constrained devices, including IoT devices and lightweight Hardware Security
-Modules (HSMs), which operate under tight limitations on compute power, memory, storage,
-and energy. It highlights how the Root of Trust acts as the foundation for secure operations,
-enabling features such as seed-based key generation to reduce the need for persistent storage,
-efficient approaches to managing ephemeral keys, and methods for offloading cryptographic tasks
-in low-resource environments. Additionally, it examines how PQC affects firmware update
-mechanisms in such constrained systems.
+This document provides guidance on integrating Post-Quantum Cryptography (PQC) into
+resource-constrained devices, such as IoT nodes and lightweight Hardware Security Modules
+(HSMs). These systems often operate with strict limitations on processing power, RAM, and
+flash memory, and may even be battery-powered. The document emphasizes the role of the Root
+of Trust as the basis for secure operations, supporting features such as seed-based key
+generation to minimize persistent storage, efficient handling of ephemeral keys, and the
+offloading of cryptographic tasks in low-resource environments. It also explores the
+implications of PQC on firmware update mechanisms in such constrained systems.
 
 --- middle
 
 # Introduction
+The transition to post-quantum cryptography (PQC) poses significant challenges for
+resource-constrained Internet of Things (IoT) devices, which are often equipped with
+Trusted Execution Environments (TEEs), secure elements, or other forms of hardware
+security modules (HSMs). These devices typically operate under strict limitations on
+processing power, RAM, and flash memory, and in some cases are battery-powered. Adopting
+PQC algorithms in such environments is difficult due to their substantially larger key
+sizes and, in some cases, higher computational demands. Consequently, the migration to
+PQC requires careful planning to ensure secure and efficient key management within
+constrained platforms.
 
-The transition to post-quantum cryptography introduces significant challenges for
-resource-constrained devices such as IoT devices, lightweight HSMs, secure elements (e.g.,
-SIMs), and Trusted Execution Environments (TEEs). These devices often operate with limited
-memory, non-volatile storage, processing power, and battery life, making the adoption of
-PQC algorithms which typically involve larger key sizes and are more computationally
-intensive than traditional algorithms particularly challenging. The increased key sizes
-and computational demands of PQC require careful consideration to ensure secure and
-efficient key management within these constrained environments.
+This document provides guidance and best practices for integrating PQC algorithms into
+constrained devices. It reviews strategies for key storage, ephemeral key management,
+and performance optimization tailored to low-resource environments. One mitigation
+technique for storage limitations is seed-based key generation, where only a compact
+seed is stored instead of the full private key. While this approach conserves memory,
+it introduces additional computational overhead because full private keys must be derived
+on demand—illustrating the classic computation-versus-storage trade-off. The document also
+examines ephemeral key generation in protocols such as TLS, along with techniques to
+optimize PQC signature operations to improve performance within constrained cryptographic
+modules.
 
-This document provides industry guidance and best practices for integrating PQC algorithms
-into constrained devices. It explores key storage strategies, ephemeral key management,
-and performance optimizations specific to resource-limited environments. One approach to
-mitigating storage constraints is seed-based key generation, where only a small seed is
-stored instead of the full private key, as supported by PQC schemes like ML-DSA and
-SLH-DSA. However, this technique increases computational overhead due to the need to derive
-full private keys on demand,  a classic computation-versus-storage tradeoff. The document
-also discusses considerations for ephemeral key generation in protocols like TLS and
-IPsec, along with techniques to optimize PQC signature operations to enhance performance
-within constrained crytographic modules.
+The focus is on PQC in constrained devices, with particular attention to the three
+algorithms standardized by NIST:
 
-This document focuses on post‑quantum cryptography in constrained devices, specifically on the three algorithms finalized by NIST: ML-DSA, ML-KEM, and SLH-DSA and on stateful hash‑based signatures in the context of firmware signing. Future revisions may expand the scope to include additional PQC algorithms.
+- Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{ML-KEM}},
+- Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{ML-DSA}}, and
+- Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{SLH-DSA}}.
+
+The Hierarchical Signature System (HSS) / Leighton–Micali Signature (LMS) {{RFC8554}} is
+also considered in the context of firmware signing. Future revisions may extend the scope
+to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
+Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
+
+# Conventions and Definitions
+
+{::boilerplate bcp14-tagged}
 
 # Key Management in Constrained Devices for PQC
-The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in memory, storage capacity, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
+
+The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
-as necessary.
+as necessary. This approach does, however, not improve the situation with device certificates
+(such as Initial Device Identifiers (IDevIDs) and Locally Significant Device Identifiers (LDevIDs)) and trust anchors (typically the root certificate) {{RFC5280}}.
+The terms IDevIDs and LDevIDs are explained in {{IEEE-802.1AR}}.
 
 ## Seed Management {#Seed}
 
@@ -238,13 +261,14 @@ There are two distinct approaches to exporting private keys or seeds from a cons
 
 In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module. 
 
-#### Export to Encrypted File
+####  Export of Encrypted Seeds and Private Keys
 
-In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
+In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, must be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
 
-Operationally, the exported data and the AES key should both be protected against unauthorized access or modification.
+Operationally, the exported data and the AES key must both be protected against unauthorized access or modification.
 
 #### Security Requirements for Export Operations
+
 The encryption and decryption of seeds and private keys must occur entirely within the cryptographic modules to reduce the risk of exposure and ensure compliance to established security standards.
 
 # Ephemeral Key Management
@@ -404,14 +428,14 @@ ECDSA) used to authenticate firmware updates. If firmware verification relies on
 traditional signature algorithms, attackers could generate forged signatures in the future
 and distribute malicious updates.
 
-## Post-quantum Firmware Authentication
+## Post-Quantum Firmware Authentication
 
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms for IoT devices in {{?I-D.ietf-suit-mti}}, which recommends use of HSS-LMS {{RFC8554}} to secure software devices.
+The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms for IoT devices in {{?I-D.ietf-suit-mti}}, which recommends use of HSS/LMS {{RFC8554}} to secure software devices.
 
-Stateful hash-based signature schemes, such as HSS-LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
+Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier. 
@@ -429,7 +453,7 @@ This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
 Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
 
-## Hybrid signature approaches
+## Hybrid Signature Approaches
 
 To enable secure migration from traditional to post-quantum security, hybrid signature methods can be used for
 firmware authentication. Parallel signatures, where a traditional and a post-quantum signature are generated and
@@ -498,6 +522,7 @@ case of hardware failure, but these processes must be encrypted and protected fr
 unauthorized access.
 
 ## Side Channel Protection
+
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, their significance in secure hardware design cannot be understated. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
 
 # Acknowledgements
