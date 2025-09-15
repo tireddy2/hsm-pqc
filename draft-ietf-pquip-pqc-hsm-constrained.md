@@ -3,7 +3,7 @@ title: "Adapting Constrained Devices for Post-Quantum Cryptography"
 abbrev: "Adapting Constrained Devices for PQC"
 category: info
 
-docname: draft-ietf-pquip-pqc-hsm-constrained
+docname: draft-ietf-pquip-pqc-hsm-constrained-latest
 submissiontype: IETF
 number:
 date:
@@ -39,8 +39,8 @@ author:
     email: "k.tirumaleswar_reddy@nokia.com"
  -
     fullname: Dan Wing
-    organization: Cloud Software Group Holdings, Inc.
-    abbrev: Cloud Software Group
+    organization: Citrix
+    abbrev: Citrix
     country: United States of America
     email: danwing@gmail.com
  -
@@ -236,7 +236,7 @@ There are two distinct approaches to exporting private keys or seeds from a cons
 
 #### Direct Transfer over TLS
 
-In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module. 
+In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module.
 
 #### Export to Encrypted File
 
@@ -414,7 +414,7 @@ The Software Updates for Internet of Things (SUIT) working group is defining man
 Stateful hash-based signature schemes, such as HSS-LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
-However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier. 
+However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier.
 {{?I-D.ietf-pquip-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
 Other post-quantum signature algorithms may also be viable for firmware signing:
@@ -474,7 +474,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
    to as device attestation. As part of this remote attestation procedure {{!RFC9334}}, the device will need to present such claims
    to a remote peer, signed using an attestation key. To remain secure against CRQCs, the attestation mechanism must also
    employ quantum-safe cryptographic primitives.
-   
+
    Several memory-optimized implementations exist (see {{BosRS22}}), but they typically trade memory savings for
    slower performance. For instance, the ML-DSA.Sign operation can be implemented within 8 KB of RAM, though at
    the cost of significantly increased runtime. Conversely, ML-DSA.Verify can be performed in as little as 3 KB of
