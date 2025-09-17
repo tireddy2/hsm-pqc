@@ -140,7 +140,7 @@ algorithms standardized by NIST:
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{ML-DSA}}, and
 - Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{SLH-DSA}}.
 
-The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) is
+The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) {{RFC8554}} is
 also considered in the context of firmware signing. Future revisions may extend the scope
 to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
 Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
