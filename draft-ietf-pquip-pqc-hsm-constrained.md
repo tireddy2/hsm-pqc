@@ -140,7 +140,7 @@ algorithms standardized by NIST:
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{ML-DSA}}, and
 - Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{SLH-DSA}}.
 
-The Hierarchical Signature System (HSS) / Leighton–Micali Signature (LMS) {{RFC8554}} is
+The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) is
 also considered in the context of firmware signing. Future revisions may extend the scope
 to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
 Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
@@ -155,9 +155,13 @@ The embedded cryptographic components used in constrained devices are designed t
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
-as necessary. This approach does, however, not improve the situation with device certificates
-(such as Initial Device Identifiers (IDevIDs) and Locally Significant Device Identifiers (LDevIDs)) and trust anchors (typically the root certificate) {{RFC5280}}.
-The terms IDevIDs and LDevIDs are explained in {{IEEE-802.1AR}}.
+as necessary. To reduce storage requirements on constrained devices, private keys for
+Initial Device Identifiers (IDevIDs), Locally Significant Device
+Identifiers (LDevIDs), and the optional attestation private key can be
+stored as seeds instead of expanded key material. This optimization does
+not apply to device certificates or trust anchors, which must be stored
+in persistent device storage since they are signed public data
+structures (see {{!RFC5280}}). The terms IDevIDs and LDevIDs are explained in {{IEEE-802.1AR}}.
 
 ## Seed Management {#Seed}
 
@@ -263,9 +267,9 @@ In scenarios where the constrained device has sufficient capability to initiate 
 
 ####  Export of Encrypted Seeds and Private Keys
 
-In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES, must be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
+In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES in key-wrap mode ({{!RFC3394}}), should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
 
-Operationally, the exported data and the AES key must both be protected against unauthorized access or modification.
+Operationally, the exported data and the the symmetric key used for encryption must both be protected against unauthorized access or modification.
 
 #### Security Requirements for Export Operations
 
