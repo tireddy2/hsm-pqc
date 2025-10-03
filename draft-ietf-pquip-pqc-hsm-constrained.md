@@ -336,25 +336,25 @@ computational overhead if the cryptographic module lacks the necessary memory to
 these operations efficiently.
 
 To address the memory consumption challenge, algorithms like ML-DSA offer a form of
-pre-hash using the mu (message representative) value described in Section 6.2 of {{ML-DSA}}.
-The mu value provides an abstraction for pre-hashing by allowing the hash or message
+pre-hash using the &mu; (message representative) value described in Section 6.2 of {{ML-DSA}}.
+The &mu; value provides an abstraction for pre-hashing by allowing the hash or message
 representative to be computed outside the cryptographic module. This feature offers
 additional flexibility by enabling the use of different cryptographic modules for the
 pre-hashing step, reducing memory consumption within the cryptographic module.
-The pre-computed mu value is then supplied to the cryptographic module, eliminating the need to
+The pre-computed &mu; value is then supplied to the cryptographic module, eliminating the need to
 transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}}
-discusses leveraging ExternalMu-ML-DSA, where the pre-hashing step
-(ExternalMu-ML-DSA.Prehash) is performed in a software cryptographic module, and only the
-pre-hashed message (mu) is sent to the hardware cryptographic module for signing
-(ExternalMu-ML-DSA.Sign). By implementing ExternalMu-ML-DSA.Prehash in software and
-ExternalMu-ML-DSA.Sign in an hardware cryptographic module, the cryptographic workload
+discusses leveraging External&mu;-ML-DSA, where the pre-hashing step
+(External&mu;-ML-DSA.Prehash) is performed in a software cryptographic module, and only the
+pre-hashed message (&mu;) is sent to the hardware cryptographic module for signing
+(External&mu;-ML-DSA.Sign). By implementing External&mu;-ML-DSA.Prehash in software and
+External&mu;-ML-DSA.Sign in an hardware cryptographic module, the cryptographic workload
 is efficiently distributed, making it practical for high-volume signing operations even
 in memory-constrained cryptographic modules.
 
-The main advantage of this method is that, unlike HashML-DSA, the ExternalMu-ML-DSA approach
+The main advantage of this method is that, unlike HashML-DSA, the External&mu;-ML-DSA approach
 is interoperable with the standard version of ML-DSA that does not use pre-hashing. This means
-a message can be signed using ML-DSA.Sign, and the verifier can independently compute mu and use
-ExternalMu-ML-DSA.Verify for verification -- or vice versa. In both cases, the verifier
+a message can be signed using ML-DSA.Sign, and the verifier can independently compute &mu; and use
+External&mu;-ML-DSA.Verify for verification -- or vice versa. In both cases, the verifier
 does not need to know whether the signer used internal or external pre-hashing, as the resulting
 signature and verification process remain the same.
 
