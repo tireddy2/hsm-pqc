@@ -58,7 +58,10 @@ informative:
   RFC8554:
   RFC5280:
   RFC8391:
-  IEEE-802.1AR: DOI.10.1109/IEEESTD.2020.9052099
+  IEEE-802.1AR: 
+     title: "IEEE Standard for Local and Metropolitan Area Networks - Secure Device Identity"
+     target: https://doi.org/10.1109/IEEESTD.2018.8423794 
+     date: false
   ML-KEM:
      title: "FIPS-203: Module-Lattice-based Key-Encapsulation Mechanism Standard"
      target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
@@ -161,7 +164,7 @@ Identifiers (LDevIDs), and the optional attestation private key can be
 stored as seeds instead of expanded key material. This optimization does
 not apply to device certificates or trust anchors, which must be stored
 in persistent device storage since they are signed public data
-structures (see {{!RFC5280}}). The terms IDevIDs and LDevIDs are explained in {{IEEE-802.1AR}}.
+structures (see {{RFC5280}}). The terms IDevIDs and LDevIDs are explained in IEEE Std 802.1AR {{IEEE-802.1AR}}.
 
 ## Seed Management {#Seed}
 
@@ -277,9 +280,8 @@ The encryption and decryption of seeds and private keys must occur entirely with
 
 # Ephemeral Key Management
 
-In protocols like TLS and IPsec, ephemeral keys are used for key exchange. Given the
-increased size of PQC key material, ephemeral key management will have to be optimized for
-both security and performance.
+Given the increased size of PQC key material, ephemeral key management will have to 
+be optimized for both security and performance.
 
 For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used
 immediately during key generation and then discarded. Furthermore, once the shared secret is
@@ -292,15 +294,14 @@ Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithm
 to be unique for each key exchange instance and kept separate across connections (e.g., TLS).
 Deleting ephemeral keying material after use not only optimizes memory usage but also ensures
 that key material cannot be reused across connections, which would otherwise introduce security and
-privacy issues. These risks are discussed in more detail in the Security Considerations of
-{{?I-D.ietf-tls-hybrid-design}}.
+privacy issues. 
 
 Constrained devices implementing PQC ephemeral key management will have to:
 
   * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
   * Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
   * Delete the private key after the shared secret is derived.
-  * Prevent key reuse across different algorithm suites or sessions.
+  * Prevent key reuse across different algorithm suites or sessions.  
 
 # Optimizing Performance in Constrained Devices for PQC Signature Algorithms
 
@@ -498,7 +499,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
    memory during signing and up to 10 KB during verification on Cortex-M4-class devices.
 
    This poses challenges for use cases such as firmware verification (e.g. secure boot) and certificate validation
-   during TLS handshakes or the generation of signed claims about the devices's hardware and software state, a process generally referred
+   or the generation of signed claims about the devices's hardware and software state, a process generally referred
    to as device attestation. As part of this remote attestation procedure {{!RFC9334}}, the device will need to present such claims
    to a remote peer, signed using an attestation key. To remain secure against CRQCs, the attestation mechanism must also
    employ quantum-safe cryptographic primitives.
@@ -514,6 +515,17 @@ While specific deployment scenarios may differ, the fundamental technical impact
 When constrained devices must authenticate inbound connections, validate commands, or verify stored data, PQC authentication
 imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
 These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
+
+# Related IETF Work
+
+This informational document complements ongoing efforts in the following IETF working groups:
+
+* TLS WG
+* LAMPS WG
+* COSE WG
+* SUIT WG
+
+Those documents define protocol-level behavior; this document focuses on the device-level adaptations necessary to implement PQC efficiently on constrained devices.
 
 # Security Considerations
 
