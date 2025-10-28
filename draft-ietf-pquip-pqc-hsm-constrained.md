@@ -524,6 +524,7 @@ This informational document complements ongoing efforts in the following IETF wo
 * LAMPS WG
 * COSE WG
 * SUIT WG
+* LAKE WG
 
 Those documents define protocol-level behavior; this document focuses on the device-level adaptations necessary to implement PQC efficiently on constrained devices.
 
