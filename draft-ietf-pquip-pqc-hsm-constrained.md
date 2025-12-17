@@ -58,9 +58,9 @@ informative:
   RFC8554:
   RFC5280:
   RFC8391:
-  IEEE-802.1AR: 
+  IEEE-802.1AR:
      title: "IEEE Standard for Local and Metropolitan Area Networks - Secure Device Identity"
-     target: https://doi.org/10.1109/IEEESTD.2018.8423794 
+     target: https://doi.org/10.1109/IEEESTD.2018.8423794
      date: false
   ML-KEM:
      title: "FIPS-203: Module-Lattice-based Key-Encapsulation Mechanism Standard"
@@ -280,7 +280,7 @@ The encryption and decryption of seeds and private keys must occur entirely with
 
 # Ephemeral Key Management
 
-Given the increased size of PQC key material, ephemeral key management will have to 
+Given the increased size of PQC key material, ephemeral key management will have to
 be optimized for both security and performance.
 
 For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used
@@ -294,47 +294,49 @@ Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithm
 to be unique for each key exchange instance and kept separate across connections (e.g., TLS).
 Deleting ephemeral keying material after use not only optimizes memory usage but also ensures
 that key material cannot be reused across connections, which would otherwise introduce security and
-privacy issues. 
+privacy issues.
 
 Constrained devices implementing PQC ephemeral key management will have to:
 
   * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
   * Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
   * Delete the private key after the shared secret is derived.
-  * Prevent key reuse across different algorithm suites or sessions.  
+  * Prevent key reuse across different algorithm suites or sessions.
 
-# Optimizing Performance in Constrained Devices for PQC Signature Algorithms
+# Optimizing Memory Footprint in Lattice-Based schemes
 
-When implementing PQC signature algorithms in constrained cryptographic modules,
-performance optimization becomes a critical consideration. Transmitting the entire message
-to the cryptographic module for signing can lead to significant overhead, especially for
-large payloads. To address this, implementers can leverage techniques that reduce the data
-transmitted to the cryptographic module, thereby improving efficiency and scalability.
+A key consideration when deploying ML-DSA in cryptographic module is the amount of memory available. ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant memory during signing due to multiple Number Theoretic Transform (NTT)
+operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive.
 
-One effective approach involves sending only a message digest to the cryptographic module
-for signing. By signing the digest of the content rather than the entire content, the
-communication between the application and the cryptographic module is minimized, enabling
-better performance. This method is applicable for any PQC signature algorithm, whether it
-is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
-often provided to pre-hash or process the message in a way that avoids sending the entire
-raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
-their construction, which requires multiple passes over the message digest during the
-signing process. The signer does not retain the entire message or its full digest in
-memory at once. Instead, different parts of the message digest are processed sequentially
-during the signing procedure. This differs from traditional algorithms like RSA or ECDSA,
-which allow for more efficient processing of the message, without requiring multiple
-passes or intermediate processing of the digest.
+Some constrained systems, i.e. those battery-operated, may have very limited RAM available for cryptographic operations. In such cases, straightforward implementations of ML-DSA may exceed the available memory, making it infeasible to use without optimizations.
 
-A key consideration when deploying ML-DSA in cryptographic module is the amount of memory
-available. ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires
-significant memory during signing due to multiple Number Theoretic Transform (NTT)
-operations, matrix expansions, and rejection sampling loops. These steps involve storing
-large polynomial vectors and intermediate values, making ML-DSA more memory-intensive. If
-an cryptographic module has sufficient memory, this may not be an issue. However, in
-constrained environments with limited memory, implementing ML-DSA can be challenging. The
-signer must store and process multiple transformed values, leading to increased
-computational overhead if the cryptographic module lacks the necessary memory to manage
-these operations efficiently.
+Both the ML-KEM and ML-DSA algorithms were selected for general use. It is worth to take a look at optimization technique that can be applied to make ML-DSA more feasible in constrained cryptographic modules.
+
+## Lazy Expansion as a Memory Optimization technique
+
+In constrained environments with limited memory, implementing ML-DSA can be challenging. Straightforward implementations may exceed the available RAM, as the signer must store and process multiple transformed values, leading to increased computational overhead if the cryptographic module lacks the necessary memory to manage these operations efficiently.
+
+### Evaluating memory requirements of Lattice-Based Schemes
+
+The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses 23 bit long modulus Q, where in case of ML-KEM it is 12 bit, regardless of security level. Conversly, the sizes of those matrices depend on the security level.
+
+To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Assuming ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straighforward implementation, the mimual amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
+
+It's worth nothing that different operations have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
+
+### Memory Optimization Techniques for Lattice-Based Schemes
+
+The high memory consumption of straightforward implementation can be a significant barrier for its adoption in constrained cryptographic modules with limited RAM. To address this challenge, various optimization techniques can be employed to reduce the memory footprint of ML-DSA implementations.
+
+The lazy expansion technique is one such optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
+
+As an example we can look at the computation of matrix-vector multiplication t=A⋅s1. First observation is that matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed, similarily vector s1 is expanded from random seed and a nonce using a PRF.
+
+The lazy expansion would first generate first element of a vector s1 (s1[0]) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (s1[1]) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 * 2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5 * 256 * 2 = 2560 bytes) + one element of t (5 * 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
+
+Using lazy expansion forces algorithm implementation to slightly differ from straighforward implementation. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
+
+## Pre-hashing as a form of Memory Optimization technique
 
 To address the memory consumption challenge, algorithms like ML-DSA offer a form of
 pre-hash using the &mu; (message representative) value described in Section 6.2 of {{ML-DSA}}.
@@ -358,6 +360,28 @@ a message can be signed using ML-DSA.Sign, and the verifier can independently co
 External&mu;-ML-DSA.Verify for verification -- or vice versa. In both cases, the verifier
 does not need to know whether the signer used internal or external pre-hashing, as the resulting
 signature and verification process remain the same.
+
+# Optimizing Performance in PQC schemes
+
+When implementing PQC signature algorithms in constrained cryptographic modules,
+performance optimization becomes a critical consideration. Transmitting the entire message
+to the cryptographic module for signing can lead to significant overhead, especially for
+large payloads. To address this, implementers can leverage techniques that reduce the data
+transmitted to the cryptographic module, thereby improving efficiency and scalability.
+
+One effective approach involves sending only a message digest to the cryptographic module
+for signing. By signing the digest of the content rather than the entire content, the
+communication between the application and the cryptographic module is minimized, enabling
+better performance. This method is applicable for any PQC signature algorithm, whether it
+is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
+often provided to pre-hash or process the message in a way that avoids sending the entire
+raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
+their construction, which requires multiple passes over the message digest during the
+signing process. The signer does not retain the entire message or its full digest in
+memory at once. Instead, different parts of the message digest are processed sequentially
+during the signing procedure. This differs from traditional algorithms like RSA or ECDSA,
+which allow for more efficient processing of the message, without requiring multiple
+passes or intermediate processing of the digest.
 
 # Additional Considerations for PQC Use in Constrained Devices
 
