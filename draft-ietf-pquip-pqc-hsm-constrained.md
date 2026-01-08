@@ -116,9 +116,9 @@ implications of PQC on firmware update mechanisms in such constrained systems.
 
 # Introduction
 The transition to post-quantum cryptography (PQC) poses significant challenges for
-resource-constrained Internet of Things (IoT) devices, which are often equipped with
-Trusted Execution Environments (TEEs), secure elements, or other forms of hardware
-security modules (HSMs). These devices typically operate under strict limitations on
+resource-constrained devices, such as Internet of Things (IoT) devices, which are often equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of hardware
+security modules (HSMs).
+These devices typically operate under strict limitations on
 processing power, RAM, and flash memory, and in some cases are battery-powered. Adopting
 PQC algorithms in such environments is difficult due to their substantially larger key
 sizes and, in some cases, higher computational demands. Consequently, the migration to
@@ -158,7 +158,8 @@ The embedded cryptographic components used in constrained devices are designed t
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
-as necessary. To reduce storage requirements on constrained devices, private keys for
+as necessary. {{ML-DSA}} Section 3.6.3 specifies that the seed &xi; generated during ML-DSA.KeyGen can be stored for later use with ML-DSA.KeyGen_internal.
+To reduce storage requirements on constrained devices, private keys for
 Initial Device Identifiers (IDevIDs), Locally Significant Device
 Identifiers (LDevIDs), and the optional attestation private key can be
 stored as seeds instead of expanded key material. This optimization does
@@ -168,47 +169,21 @@ structures (see {{RFC5280}}). The terms IDevIDs and LDevIDs are explained in IEE
 
 ## Seed Management {#Seed}
 
-The seed generated during the PQC key generation function is highly sensitive, as it will
-be used to compute the private key or decapsulation key. Consequently, seeds must be
-treated with the same level of security as private keys.
-
 To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
 
 ### Seed Storage
 
-Some PQ key exchange mechanisms use a seed to generate their private keys (e.g., ML-KEM,
-McEliece, and HQC), and those seeds are smaller than private keys, saving storage space.
-Some implementations may choose to retain the (small) seed rather than the (larger)
-private key.  As the private key is necessary for cryptographic operations, it can
-be derived from the seed when needed or retained in a cache within the security module.
+Several post-quantum algorithms use a seed to generate their private keys (e.g., ML-KEM, ML-DSA, and HQC). Those seeds are smaller than private keys, hence some implementations may choose to retain the seed rather than the full private key to save on storage space. The private key can then be derived from the seed when needed or retained in a cache within the security module.
 
-   Seeds must be securely stored within a cryptographic module of the device whether
-hardware or software-based to protect against unauthorized access. Since the seed can derive
-the private key, it must be safeguarded with the same
-level of protection as a private key. For example, according to {{ML-DSA}}
-Section 3.6.3, the seed ξ generated during ML-DSA.KeyGen can be stored for later use with
-ML-DSA.KeyGen_internal.
+Since the seed can derive the private key, it must be safeguarded with the same
+level of protection as a private key. Seeds should be securely stored within a cryptographic module of the device whether hardware or software-based to protect against unauthorized access.
 
    The choice between storing a seed or an expanded private key involves trade-offs
 between storage efficiency and performance. Some constrained cryptographic modules may
 store only the seed and derive the expanded private key on demand, whereas others may
 prefer storing the full expanded key to reduce computational overhead during key usage.
 
-   While vulnerabilities like the "Unbindable Kemmy Schmidt" attack {{BIND}} demonstrate
-the risks of manipulating expanded private keys in environments lacking hardware-backed
-protections, these attacks generally assume an adversary has some level of control over
-the expanded key format. However, in a hardware-backed protcted environment, where private
-keys are typically protected from such manipulation, the primary motivation for storing
-the seed rather than the expanded key is not directly tied to mitigating "Kemmy" attacks.
-
-   The ML-DSA and ML-KEM private key formats, as specified in
-{{?I-D.ietf-lamps-dilithium-certificates}} and {{?I-D.ietf-lamps-kyber-certificates}},
-represent the private key using a seed from which the expanded private key is derived.
-While these formats rely on the seed for key generation, an constrained cryptographic
-module may choose to store the expanded private key to avoid the additional computation
-required for running KeyGen.
-
-   This choice between storing the seed or the expanded private key has direct
+   The choice between storing the seed or the expanded private key has direct
 implications on performance, as key derivation incurs additional computation. The impact
 of this overhead varies depending on the algorithm. For instance, ML-DSA key generation,
 which primarily involves polynomial operations using the Number Theoretic Transform (NTT)
@@ -221,6 +196,13 @@ requirements and operational constraints. While constrained systems employ vario
 storage strategies, the decision to store full private keys or only seeds depends on
 design goals, performance considerations, and standards compliance (e.g., PKCS#11).
 
+   While vulnerabilities like the "Unbindable Kemmy Schmidt" misbinding attack {{BIND}} demonstrate
+the risks of manipulating expanded private keys in environments lacking hardware-backed
+protections, these attacks generally assume an adversary has some level of control over
+the expanded key format. However, in a hardware-backed protcted environment, where private
+keys are typically protected from such manipulation, the primary motivation for storing
+the seed rather than the expanded key is not directly tied to mitigating such misbinding attacks.
+
    A challenge arises when importing an existing private key into a system designed to
 store only seeds. When a user attempts to import an already expanded private key, there is
 a mismatch between the key format used internally (seed-based) and the expanded private
@@ -232,18 +214,18 @@ creates a potential gap in interoperability.
    If the seed is not securely stored at the time of key generation, it is permanently
 lost because the process of deriving an expanded key from the seed relies on a one-way
 cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
-deriving the original seed from the expanded key is computationally infeasible.
+deriving the original seed from the expanded key, is computationally infeasible.
 
 ### Efficient Key Derivation
 
    When storing only the seed in a constrained cryptographic module, it is crucial that
 the device is capable of deriving the private key efficiently whenever required. However,
-it is important to note that constantly re-deriving the private key for every
+repeatedly re-deriving the private key for every
 cryptographic operation may introduce significant performance overhead. In scenarios where
 performance is a critical consideration, it may be more efficient to store the expanded
-private key directly instead of only the seed. Higher quality implementations may also
-retain (cache) recently-used or frequently-used private keys to avoid the computational
-overhead and delay of deriving the private key from the seed with each request.
+private key directly instead of only the seed. Implementations may choose to 
+retain (cache) several recently-used or frequently-used private keys to avoid the computational
+overhead and delay of deriving private keys from their seeds with each request.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar
 functions for other PQC algorithms, must be implemented in a way that can securely operate
@@ -256,23 +238,20 @@ perform cryptographic operations.
 ### Exporting Seeds and Private Keys
 
    Given the potential for hardware failures or the end-of-life of devices containing keys, it
-is essential to plan for backup and recovery of the cryptographic seeds and private keys. Constrained
-devices should support secure seed backup mechanisms, ideally leveraging encrypted storage
-and ensuring that the backup data is protected from unauthorized access. In a disaster
-recovery scenario, the seeds and private keys should be recoverable private key, provided the proper security measures are in place to prevent unauthorized
-extraction.
+is essential to plan for backup and recovery of cryptographic seeds and private keys.
+Constrained devices should support secure seed- or key-backup mechanisms, leveraging protections such as encrypted storage and ensuring that security measures are in place so that the backup data is protected from unauthorized access.
 
 There are two distinct approaches to exporting private keys or seeds from a constrained device:
 
-#### Direct Transfer over TLS
+#### Direct Transfer Over TLS
 
-In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module.
+In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually-authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module.
 
 ####  Export of Encrypted Seeds and Private Keys
 
-In more common constrained device scenarios, for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES in key-wrap mode ({{!RFC3394}}), should be used to encrypt the seed before export. This ensures that the seed remains protected even if the export process is vulnerable to quantum attacks.
+In more common constrained device scenarios for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES in key-wrap mode ({{!RFC3394}}), should be used to encrypt the seed or private key before export. This ensures that the key remains protected even if the export process is vulnerable to quantum attacks.
 
-Operationally, the exported data and the the symmetric key used for encryption must both be protected against unauthorized access or modification.
+Operationally, the exported data and the symmetric key used for encryption must both be protected against unauthorized access or modification.
 
 #### Security Requirements for Export Operations
 
@@ -283,23 +262,21 @@ The encryption and decryption of seeds and private keys must occur entirely with
 Given the increased size of PQC key material, ephemeral key management will have to
 be optimized for both security and performance.
 
-For PQC KEMs, ephemeral key-pairs are generated from an ephemeral seed, that is used
+For PQC KEMs, ephemeral key pairs are generated from an ephemeral seed, that is used
 immediately during key generation and then discarded. Furthermore, once the shared secret is
 derived, the ephemeral private key will have to be deleted. Since the private key resides in the
 constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of
-PQC key material in the cryptographic module. This ensures that that no unnecessary secrets
+PQC key material in the cryptographic module. This also ensures that that no unnecessary secrets
 persist beyond their intended use.
 
 Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms, are intended
 to be unique for each key exchange instance and kept separate across connections (e.g., TLS).
-Deleting ephemeral keying material after use not only optimizes memory usage but also ensures
-that key material cannot be reused across connections, which would otherwise introduce security and
-privacy issues.
+Deleting ephemeral keying material after use helps ensure that key material cannot be reused across connections, which would otherwise introduce security and privacy issues.
 
 Constrained devices implementing PQC ephemeral key management will have to:
 
-  * Generate ephemeral key-pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
-  * Enforce immediate seed erasure after the key-pair is generated and the cryptographic operation is completed.
+  * Generate ephemeral key pairs on-demand from an ephemeral seed stored temporarily within the cryptographic module.
+  * Enforce immediate seed erasure after the key pair is generated and the cryptographic operation is completed.
   * Delete the private key after the shared secret is derived.
   * Prevent key reuse across different algorithm suites or sessions.
 
@@ -310,33 +287,27 @@ operations, matrix expansions, and rejection sampling loops. These steps involve
 
 Some constrained systems, i.e. those battery-operated, may have very limited RAM available for cryptographic operations. In such cases, straightforward implementations of ML-DSA may exceed the available memory, making it infeasible to use without optimizations.
 
-Both the ML-KEM and ML-DSA algorithms were selected for general use. It is worth to take a look at optimization technique that can be applied to make ML-DSA more feasible in constrained cryptographic modules.
+Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimization techniques that can be applied to make ML-DSA more feasible in constrained cryptographic modules are discussed in {{lazy-expansion}} and {{pre-hashing}}.
 
-## Lazy Expansion as a Memory Optimization technique
+## Memory requirements of Lattice-Based Schemes
 
-In constrained environments with limited memory, implementing ML-DSA can be challenging. Straightforward implementations may exceed the available RAM, as the signer must store and process multiple transformed values, leading to increased computational overhead if the cryptographic module lacks the necessary memory to manage these operations efficiently.
+The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversly, the sizes of those matrices depend on the security level.
 
-### Evaluating memory requirements of Lattice-Based Schemes
+To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straighforward implementation, the mimual amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
-The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses 23 bit long modulus Q, where in case of ML-KEM it is 12 bit, regardless of security level. Conversly, the sizes of those matrices depend on the security level.
+It's worth nothing that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
-To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Assuming ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straighforward implementation, the mimual amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
+### Lazy Expansion as a Memory Optimization Technique {#lazy-expansion}
 
-It's worth nothing that different operations have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
+The lazy expansion technique is an optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
 
-### Memory Optimization Techniques for Lattice-Based Schemes
-
-The high memory consumption of straightforward implementation can be a significant barrier for its adoption in constrained cryptographic modules with limited RAM. To address this challenge, various optimization techniques can be employed to reduce the memory footprint of ML-DSA implementations.
-
-The lazy expansion technique is one such optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
-
-As an example we can look at the computation of matrix-vector multiplication t=A⋅s1. First observation is that matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed, similarily vector s1 is expanded from random seed and a nonce using a PRF.
+As an example, we can look at the computation of matrix-vector multiplication t=A⋅s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarily, the vector s1 is expanded from random seed and a nonce using a PRF.
 
 The lazy expansion would first generate first element of a vector s1 (s1[0]) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (s1[1]) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 * 2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5 * 256 * 2 = 2560 bytes) + one element of t (5 * 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
 Using lazy expansion forces algorithm implementation to slightly differ from straighforward implementation. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
-## Pre-hashing as a form of Memory Optimization technique
+## Pre-hashing as a Memory Optimization Technique {#pre-hashing}
 
 To address the memory consumption challenge, algorithms like ML-DSA offer a form of
 pre-hash using the &mu; (message representative) value described in Section 6.2 of {{ML-DSA}}.
@@ -361,7 +332,7 @@ External&mu;-ML-DSA.Verify for verification -- or vice versa. In both cases, the
 does not need to know whether the signer used internal or external pre-hashing, as the resulting
 signature and verification process remain the same.
 
-# Optimizing Performance in PQC schemes
+# Optimizing Performance in PQC Signature Schemes
 
 When implementing PQC signature algorithms in constrained cryptographic modules,
 performance optimization becomes a critical consideration. Transmitting the entire message
@@ -383,42 +354,17 @@ during the signing procedure. This differs from traditional algorithms like RSA 
 which allow for more efficient processing of the message, without requiring multiple
 passes or intermediate processing of the digest.
 
-# Additional Considerations for PQC Use in Constrained Devices
 
-Key Rotation and Renewal: In constrained devices, managing the lifecycle of cryptographic
-keys including periodic key rotation and renewal is critical for maintaining long-term
-security and supporting cryptographic agility. While constrained devices may rely on
-integrated secure elements or lightweight HSMs for secure key storage and operations, the
-responsibility for orchestrating key rotation typically resides in the application layer
-or external device management infrastructure.
+## Cryptographic Artifact Sizes for Post-Quantum Algorithms {#sec-key-sizes}
 
-Although the underlying cryptographic module may offer primitives to securely generate new
-key pairs, store fresh seeds, or delete obsolete keys, these capabilities must be
-integrated into the device’s broader key management framework. This process is especially
-important in the context of PQC, where evolving research may lead to changes in
-recommended algorithms, parameters, and key management practices.
-
-The security of PQC schemes continues to evolve, with potential risks arising from
-advances in post-quantum algorithms, cryptanalytic or implementation vulnerabilities. As a
-result, constrained devices should be designed to support flexible and updatable key
-management policies. This includes the ability to:
-
-* Rotate keys periodically to provide forward-secrecy,
-
-* Update algorithm choices or key sizes based on emerging security guidance,
-
-* Reconfigure cryptographic profile of the device via firmware updates.
-
-## Key Sizes of Post-Quantum Algorithms {#sec-key-sizes}
-
-The key sizes of post-quantum algorithms are generally larger than those of traditional
-cryptographic algorithms. This increase in key size is a significant consideration for
+The sizes of keys, ciphertexts, and signatures of post-quantum algorithms are generally larger than those of traditional
+cryptographic algorithms. This increase in size is a significant consideration for
 constrained devices, which often have limited memory and storage capacity. For example,
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table provides the key sizes of some instantiations of ML-DSA, ML-KEM, FN-DSA
-and SLH-DSA. For comparision we also include the key sizes for X25519 and ED25519, which
+The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, ML-KEM, FN-DSA
+and SLH-DSA. For comparision we also include the key sizes for X25519 and Ed25519, which
 are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
@@ -508,7 +454,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
    counterparts. A comparison is provided in {{sec-key-sizes}}.
 
    These larger artifacts introduce several challenges. For example, certificate chains with PQC public keys
-   require more storage, and trust anchors - particularly for schemes like SLH-DSA - may be too large to embed in
+   require more storage, and trust anchors -- particularly for schemes like SLH-DSA -- may be too large to embed in
    constrained ROM.
 
    Furthermore, validating signed payloads or commands increases network bandwidth requirements. In the case of large
@@ -533,7 +479,7 @@ While specific deployment scenarios may differ, the fundamental technical impact
    the cost of significantly increased runtime. Conversely, ML-DSA.Verify can be performed in as little as 3 KB of
    RAM without a major performance penalty.
 
-   Devices with 8 - 16 KB of available RAM must often balance performance against feasibility when integrating PQC
+   Devices with 8-16 KB of available RAM must often balance performance against feasibility when integrating PQC
    signature verification.
 
 When constrained devices must authenticate inbound connections, validate commands, or verify stored data, PQC authentication
