@@ -408,7 +408,7 @@ and distribute malicious updates.
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-The Software Updates for Internet of Things (SUIT) working group is defining mandatory-to-implement cryptographic algorithms for IoT devices in {{?I-D.ietf-suit-mti}}, which recommends use of HSS/LMS {{RFC8554}} to secure software devices.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recomments use of HSS/LMS {{RFC8554}} to secure software devices.
 
 Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
@@ -486,17 +486,6 @@ When constrained devices must authenticate inbound connections, validate command
 imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
 These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
 
-# Related IETF Work
-
-This informational document complements ongoing efforts in the following IETF working groups:
-
-* TLS WG
-* LAMPS WG
-* COSE WG
-* SUIT WG
-* LAKE WG
-
-Those documents define protocol-level behavior; this document focuses on the device-level adaptations necessary to implement PQC efficiently on constrained devices.
 
 # Security Considerations
 
