@@ -100,7 +100,10 @@ informative:
   REC-KEM:
     title: Recommendations for Key-Encapsulation Mechanisms
     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-227.ipd.pdf
-
+  SECBOOT:
+    title: "Post-Quantum LMS and SPHINCS+ Hash-Based Signatures for UEFI Secure Boot"
+    target: https://eprint.iacr.org/2021/041
+    date: false
 --- abstract
 
 This document provides guidance on integrating Post-Quantum Cryptography (PQC) into
@@ -540,7 +543,7 @@ When constrained devices must authenticate inbound connections, validate command
 imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
 These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
 
-# Related IETF Work
+We note that a comprehensive study related to secure boot on constrained devices is provided in {{SECBOOT}}; readers are referred there for further details.
 
 This informational document complements ongoing efforts in the following IETF working groups:
 
