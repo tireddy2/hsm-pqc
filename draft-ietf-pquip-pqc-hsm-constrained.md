@@ -499,6 +499,32 @@ benchmarking tools to accurately compute average signing times across multiple s
 
 # Additional Considerations for PQC Use in Constrained Devices
 
+## Key Rotation and Renewal
+
+In constrained devices, managing the lifecycle of cryptographic
+keys including periodic key rotation and renewal is critical for maintaining long-term
+security and supporting cryptographic agility. While constrained devices may rely on
+integrated secure elements or lightweight HSMs for secure key storage and operations, the
+responsibility for orchestrating key rotation typically resides in the application layer
+or external device management infrastructure.
+
+Although the underlying cryptographic module may offer primitives to securely generate new
+key pairs, store fresh seeds, or delete obsolete keys, these capabilities must be
+integrated into the device’s broader key management framework. This process is especially
+important in the context of PQC, where evolving research may lead to changes in
+recommended algorithms, parameters, and key management practices.
+
+The security of PQC schemes continues to evolve, with potential risks arising from
+advances in post-quantum algorithms, cryptanalytic or implementation vulnerabilities. As a
+result, constrained devices should be designed to support flexible and updatable key
+management policies. This includes the ability to:
+
+* Rotate keys periodically to provide forward-secrecy,
+
+* Update algorithm choices or key sizes based on emerging security guidance,
+
+* Reconfigure cryptographic profile of the device via firmware updates.
+
 ## Cryptographic Artifact Sizes for Post-Quantum Algorithms {#sec-key-sizes}
 
 The sizes of keys, ciphertexts, and signatures of post-quantum algorithms are generally larger than those of traditional
