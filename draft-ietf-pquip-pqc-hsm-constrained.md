@@ -104,6 +104,18 @@ informative:
        - ins: A. Sprenkels
      date: December 2022
   REC-KEM: DOI.10.6028/NIST.SP.800-227
+  SECBOOT:
+     title: "Post-Quantum LMS and SPHINCS+ Hash-Based Signatures for UEFI Secure Boot"
+     target: https://eprint.iacr.org/2021/041
+     date: false
+  Lyu09:
+     title: "Fiat-Shamir with Aborts: Applications to Lattice and Factoring-Based Signatures."
+     target: "https://www.iacr.org/archive/asiacrypt2009/59120596/59120596.pdf"
+     date: December 2009
+  Li32:
+     title: "CRYSTALS-Dilithium: Algorithm Specifications and Supporting Documentation (Version 3.1)"
+     target: "https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf"
+     date: February 2021
 
 --- abstract
 
@@ -117,6 +129,8 @@ offloading of cryptographic tasks in low-resource environments. It also explores
 implications of PQC on firmware update mechanisms in such constrained systems.
 
 --- middle
+
+---
 
 # Introduction
 The transition to post-quantum cryptography (PQC) poses significant challenges for
@@ -358,6 +372,138 @@ during the signing procedure. This differs from traditional algorithms like RSA 
 which allow for more efficient processing of the message, without requiring multiple
 passes or intermediate processing of the digest.
 
+## Impact of rejection sampling in ML-DSA Signing on performance
+
+In constrained and battery-powered IoT devices that perform ML-DSA signing, the rejection-sampling
+loop introduces variability in signing latency and energy consumption due to the probabilistic
+nature of the signing process. While this results in a variable number of iterations in the signing
+algorithm, the expected number of retries for the standardized ML-DSA parameter sets is quantified
+below.
+
+The analysis in this section follows the algorithmic structure and assumptions defined in FIPS-204.
+Accordingly, the numerical results are analytically derived and characterize the expected behavior
+of ML-DSA.
+
+The ML-DSA signature scheme uses the Fiat–Shamir with Aborts construction {{Lyu09}}. As a
+result, the signature generation algorithm is built around a rejection-sampling loop. This
+section examines the rejection-sampling behavior of ML-DSA, as rejection sampling is not
+commonly used as a core mechanism in traditional digital signature schemes.
+
+Rejection sampling is used to ensure that intermediate and output values follow the
+distributions required by the security proof. In particular, after computing candidate signature
+components, the signer checks whether certain norm bounds are satisfied. If any of these bounds
+are violated, the entire signing attempt is discarded and restarted with fresh randomness.
+
+The purpose of rejection sampling is twofold. First, it prevents leakage of information about the
+secret key through out-of-range values that could otherwise bias the distribution of signatures.
+Second, it ensures that the distribution of valid signatures is statistically close to the ideal
+distribution assumed in the security reduction.
+
+The number of rejections during signature generation depends on three factors:
+
+* the message (i.e., the value of &mu)
+* the secret key material, and
+* when hedged signing is used (see {{ML-DSA}}, Section 3.4), the random seed.
+
+As a result, some message-key combinations may lead to a higher number of rejection iterations
+than others.
+
+Using Equation (5) from {{Li32}} and assuming an RBG as specified in {{ML-DSA}} (Section 3.6.1),
+the rejection probability during ML-DSA signing can be computed. These probabilities depend on
+the ML-DSA parameter set and are summarized below.
+
+| ML-DSA Variant | Acceptance Probability |
+|----------------|------------------------|
+| ML-DSA-44      | 0.2350                 |
+| ML-DSA-65      | 0.1963                 |
+| ML-DSA-87      | 0.2596                 |
+{: #AcceptanceProbabilities title="Acceptance probability - per-attempt probability of successful signing for the given ML-DSA variant."}
+
+Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
+succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
+the expected number of iterations until a successful signature is generated is the reciprocal
+of the acceptance probability. Hence, if r denotes the per-iteration rejection probability and
+p = 1 - r the acceptance probability, then the expected number of signing iterations is 1/p.
+Using this model, the expected number of signing attempts for each ML-DSA variant is shown below.
+
+| ML-DSA Variant | Expected Number of Attempts |
+|----------------|-----------------------------|
+| ML-DSA-44      | 4.255                       |
+| ML-DSA-65      | 5.094                       |
+| ML-DSA-87      | 3.852                       |
+{: #ExpectedAttempts title="Expected Number of Attempts for the given ML-DSA variant."}
+
+This model also allows computing the probability that the rejection-sampling loop completes
+within a given number of iterations. Specifically, the minimum number of iterations n required
+to achieve a desired completion probability can be computed as:
+n >= ln(1 - desired_probability) / ln(1 - p), where p is the per-iteration acceptance probability.
+For example, achieving a 99% probability of completing the signing process for ML-DSA-65 requires
+at most 21 iterations of the rejection-sampling loop.
+
+Finally, based on these results, the cumulative distribution function (CDF) can be derived for
+each ML-DSA variant. The CDF expresses the probability that the signing process completes within
+at most a given number of iterations.
+
+| Iterations | ML-DSA-44           | ML-DSA-65           | ML-DSA-87           |
+|------------|---------------------|---------------------|---------------------|
+| 1          | 0.2350              | 0.1963              | 0.2596              |
+| 2          | 0.4148              | 0.3541              | 0.4518              |
+| 3          | 0.5523              | 0.4809              | 0.5941              |
+| 4          | 0.6575              | 0.5828              | 0.6995              |
+| 5          | 0.7380              | 0.6647              | 0.7775              |
+| 6          | 0.7996              | 0.7305              | 0.8353              |
+| 7          | 0.8467              | 0.7834              | 0.8780              |
+| 8          | 0.8827              | 0.8259              | 0.9097              |
+| 9          | 0.9103              | 0.8601              | 0.9331              |
+| 10         | 0.9314              | 0.8876              | 0.9505              |
+| 11         | 0.9475              | 0.9096              | 0.9634              |
+{: #MLDSA_Sign_CDF title="CDF values denote the probability of completing the signing process within the given number of iterations, for each ML-DSA variant."}
+
+The table {{MLDSA_Sign_CDF}} shows that while acceptance rate is relatively high for ML-DSA, the
+probability quickly grows with increasing number of iterations. After 11 iterations,
+each ML-DSA variant achieves over 90% probability of completing the signing process.
+
+### Practical Implications for Constrained Cryptographic Modules
+
+As shown above, the rejection-sampling loop in ML-DSA signing leads to a probabilistic runtime
+with a geometrically distributed number of iterations. While the expected execution time is
+small, the tail of the distribution implies that, with low probability, a signing operation
+may require significantly more iterations than average. This unfavorable tail behavior represents
+a practical concern for ML-DSA deployments on constrained devices with limited execution
+capability and may require additional consideration.
+
+This consideration primarily applies to devices that perform ML-DSA signing. Devices that only
+generate ML-DSA keys or verify signatures are not affected, as those operations does not involve
+rejection sampling and have deterministic execution times.
+
+### Suggestions for benchmarking ML-DSA Signing Performance
+
+When benchmarking ML-DSA signing performance in constrained cryptographic modules, it is
+important to account for the probabilistic nature of the rejection-sampling loop. Reporting
+only a single timing measurement or a best-case execution time may lead to misleading conclusions
+about practical performance.
+
+To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks should
+report the following two metrics:
+
+1. Single-iteration signing time:
+The signing time for a signature operation that completes within a single iteration of the
+rejection-sampling loop. This metric reflects the best-case performance of the signing algorithm
+and provides insight into the efficiency of the core signing operation without the overhead
+of repeated iterations.
+
+2. Average signing time:
+The average signing time measured over a sufficiently large number of signing operations,
+using independent messages and, where applicable, independent randomness. Alternatively, an
+implementation MAY report the signing time corresponding to the expected number of iterations
+(see {{ExpectedAttempts}}). This approach requires identifying a message, key, and randomness
+combination that results in the expected iteration count.
+
+Libraries implementing ML-DSA should provide a mechanism to report the number of
+rejection-sampling iterations used during the most recent signing operation. This enables
+benchmarking tools to accurately compute average signing times across multiple signing operations.
+
+# Additional Considerations for PQC Use in Constrained Devices
 
 ## Cryptographic Artifact Sizes for Post-Quantum Algorithms {#sec-key-sizes}
 
@@ -489,7 +635,6 @@ While specific deployment scenarios may differ, the fundamental technical impact
 When constrained devices must authenticate inbound connections, validate commands, or verify stored data, PQC authentication
 imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
 These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
-
 
 # Security Considerations
 
