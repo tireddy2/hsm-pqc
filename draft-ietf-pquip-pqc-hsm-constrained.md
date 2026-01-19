@@ -55,51 +55,55 @@ author:
 normative:
 
 informative:
-  RFC8554:
-  RFC5280:
-  RFC8391:
-  IEEE-802.1AR:
-     title: "IEEE Standard for Local and Metropolitan Area Networks - Secure Device Identity"
-     target: https://doi.org/10.1109/IEEESTD.2018.8423794
-     date: false
-  ML-KEM:
-     title: "FIPS-203: Module-Lattice-based Key-Encapsulation Mechanism Standard"
-     target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
-     date: false
-  ML-DSA:
-     title: "FIPS-204: Module-Lattice-Based Digital Signature Standard"
-     target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf
-     date: false
-  REC-SHS:
-     title: "Recommendation for Stateful Hash-Based Signature Scheme"
-     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf
-     date: false
+  IEEE-802.1AR: DOI.10.1109/IEEESTD.2018.8423794
+  FIPS203: DOI.10.6028/NIST.FIPS.203
+  FIPS204: DOI.10.6028/NIST.FIPS.204
+  FIPS205: DOI.10.6028/NIST.FIPS.205
+  REC-SHS: DOI.10.6028/NIST.SP.800-208
   BIND:
-    title: Unbindable Kemmy Schmid
+    title: "Unbindable Kemmy Schmidt: ML-KEM is neither MAL-BIND-K-CT nor MAL-BIND-K-PK"
     target: https://eprint.iacr.org/2024/523.pdf
-  SLH-DSA:
-     title: "FIPS-205: Stateless Hash-Based Digital Signature Standard"
-     target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf
-     date: false
+    author:
+      - ins: S. Schmieg
+    date: April 2024
   HQC:
-     title: "Hamming Quasi-Cyclic"
+     title: "Hamming Quasi-Cyclic (HQC)"
      target: https://pqc-hqc.org
-     date: false
+     author:
+       - ins: Gaborit et al.
+     date: August 2025
   FN-DSA:
      title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
      target: https://falcon-sign.info/falcon.pdf
-     date: false
+     author:
+     - ins: P-A. Fouque
+     - ins: J. Hoffstein
+     - ins: P. Kirchner
+     - ins: V. Lyubashevsky
+     - ins: T. Pornin
+     - ins: T. Prest
+     - ins: T. Ricosset
+     - ins: G. Seiler
+     - ins: W. Whyte
+     - ins: Z. Zhang
+     date: October 2020
   Stream-SPHINCS:
      title: "Streaming SPHINCS+ for Embedded Devices using the Example of TPMs"
      target: "https://eprint.iacr.org/2021/1072.pdf"
-     date: false
+     author:
+     - ins: R. Niederhagen
+     - ins: J. Roth
+     - ins: J. Wälde
+     date: August 2021
   BosRS22:
      title: "Dilithium for Memory Constrained Devices"
      target: "https://eprint.iacr.org/2022/323.pdf"
-     date: false
-  REC-KEM:
-    title: Recommendations for Key-Encapsulation Mechanisms
-    target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-227.ipd.pdf
+     author:
+       - ins: J. Bos
+       - ins: J. Renes
+       - ins: A. Sprenkels
+     date: December 2022
+  REC-KEM: DOI.10.6028/NIST.SP.800-227
 
 --- abstract
 
@@ -139,11 +143,11 @@ modules.
 The focus is on PQC in constrained devices, with particular attention to the three
 algorithms standardized by NIST:
 
-- Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{ML-KEM}},
-- Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{ML-DSA}}, and
-- Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{SLH-DSA}}.
+- Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}},
+- Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}, and
+- Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{FIPS205}}.
 
-The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) {{RFC8554}} is
+The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) {{?RFC8554}} is
 also considered in the context of firmware signing. Future revisions may extend the scope
 to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
 Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
@@ -158,18 +162,18 @@ The embedded cryptographic components used in constrained devices are designed t
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
-as necessary. {{ML-DSA}} Section 3.6.3 specifies that the seed &xi; generated during ML-DSA.KeyGen can be stored for later use with ML-DSA.KeyGen_internal.
+as necessary. {{FIPS204}} Section 3.6.3 specifies that the seed &xi; generated during ML-DSA.KeyGen can be stored for later use with ML-DSA.KeyGen_internal.
 To reduce storage requirements on constrained devices, private keys for
 Initial Device Identifiers (IDevIDs), Locally Significant Device
 Identifiers (LDevIDs), and the optional attestation private key can be
 stored as seeds instead of expanded key material. This optimization does
 not apply to device certificates or trust anchors, which must be stored
 in persistent device storage since they are signed public data
-structures (see {{RFC5280}}). The terms IDevIDs and LDevIDs are explained in IEEE Std 802.1AR {{IEEE-802.1AR}}.
+structures (see {{?RFC5280}}). The terms IDevIDs and LDevIDs are explained in IEEE Std 802.1AR {{IEEE-802.1AR}}.
 
 ## Seed Management {#Seed}
 
-To comply with {{ML-KEM}}, {{ML-DSA}}, {{SLH-DSA}} and {{REC-KEM}} guidelines:
+To comply with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}} guidelines:
 
 ### Seed Storage
 
@@ -310,13 +314,13 @@ Using lazy expansion forces algorithm implementation to slightly differ from str
 ## Pre-hashing as a Memory Optimization Technique {#pre-hashing}
 
 To address the memory consumption challenge, algorithms like ML-DSA offer a form of
-pre-hash using the &mu; (message representative) value described in Section 6.2 of {{ML-DSA}}.
+pre-hash using the &mu; (message representative) value described in Section 6.2 of {{FIPS204}}.
 The &mu; value provides an abstraction for pre-hashing by allowing the hash or message
 representative to be computed outside the cryptographic module. This feature offers
 additional flexibility by enabling the use of different cryptographic modules for the
 pre-hashing step, reducing memory consumption within the cryptographic module.
 The pre-computed &mu; value is then supplied to the cryptographic module, eliminating the need to
-transmit the entire message for signing. {{?I-D.ietf-lamps-dilithium-certificates}}
+transmit the entire message for signing. {{?RFC9881}}
 discusses leveraging External&mu;-ML-DSA, where the pre-hashing step
 (External&mu;-ML-DSA.Prehash) is performed in a software cryptographic module, and only the
 pre-hashed message (&mu;) is sent to the hardware cryptographic module for signing
@@ -385,8 +389,8 @@ are traditional schemes widely used in constrained environments.
 | Ed25519            | Public Key       | 32               |
 |                    | Signature        | 64               |
 
-Full key sizes for ML-DSA, ML-KEM, FN-DSA and SLH-DSA are specified in {{ML-DSA}}, {{ML-KEM}}, {{FN-DSA}}
-and {{SLH-DSA}} respectively.
+Full key sizes for ML-DSA, ML-KEM, FN-DSA and SLH-DSA are specified in {{FIPS204}}, {{FIPS203}}, {{FN-DSA}}
+and {{FIPS205}} respectively.
 
 # Post-quantum Firmware Upgrades for Constrained Devices
 
@@ -408,9 +412,9 @@ and distribute malicious updates.
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recomments use of HSS/LMS {{RFC8554}} to secure software devices.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software devices.
 
-Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
+Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{?RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier.
@@ -418,11 +422,11 @@ However, in the case of firmware updates, the OTS keys will be signing versioned
 
 Other post-quantum signature algorithms may also be viable for firmware signing:
 
-* SLH-DSA, a stateless hash-based signature specified in {{SLH-DSA}}, also has well-understood security based on the security of its underlying hash function, and additionally doesn't have the complexities associated with state management that HSS and XMSS have.
+* SLH-DSA, a stateless hash-based signature specified in {{FIPS205}}, also has well-understood security based on the security of its underlying hash function, and additionally doesn't have the complexities associated with state management that HSS and XMSS have.
 However, signature generation and verification are comparatively slow, and signature sizes are generally larger than other post-quantum algorithms.
 SLH-DSA's suitability as a firmware signing algorithm will depend on the capabilities of the underlying hardware.
 
-* ML-DSA is a lattice-based signature algorithm specified in {{ML-DSA}}.
+* ML-DSA is a lattice-based signature algorithm specified in {{FIPS204}}.
 It is more performant than SLH-DSA, with significantly faster signing and verification times, as well as shorter signatures.
 This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
