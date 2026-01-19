@@ -534,7 +534,7 @@ the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which
 increased memory usage and slower performance in constrained environments.
 
 The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, ML-KEM, FN-DSA
-and SLH-DSA. For comparision we also include the key sizes for X25519 and Ed25519, which
+and SLH-DSA. For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
 are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
