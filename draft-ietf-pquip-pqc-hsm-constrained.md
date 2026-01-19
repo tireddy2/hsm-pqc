@@ -130,8 +130,6 @@ implications of PQC on firmware update mechanisms in such constrained systems.
 
 --- middle
 
----
-
 # Introduction
 The transition to post-quantum cryptography (PQC) poses significant challenges for
 resource-constrained devices, such as Internet of Things (IoT) devices, which are often equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of hardware
@@ -165,10 +163,6 @@ The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) {{?RFC85
 also considered in the context of firmware signing. Future revisions may extend the scope
 to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
 Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
-
-# Conventions and Definitions
-
-{::boilerplate bcp14-tagged}
 
 # Key Management in Constrained Devices for PQC
 
