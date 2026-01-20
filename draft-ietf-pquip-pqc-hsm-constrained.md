@@ -164,6 +164,9 @@ also considered in the context of firmware signing. Future revisions may extend 
 to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
 Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
 
+This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
+Actual protocol behaviour is defined in other documents.
+
 # Key Management in Constrained Devices for PQC
 
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
