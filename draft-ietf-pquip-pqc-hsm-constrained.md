@@ -68,7 +68,7 @@ informative:
     date: April 2024
   HQC:
      title: "Hamming Quasi-Cyclic (HQC)"
-     target: https://pqc-hqc.org
+     target: https://pqc-hqc.org/doc/hqc_specifications_2025_08_22.pdf
      author:
        - ins: Gaborit et al.
      date: August 2025
