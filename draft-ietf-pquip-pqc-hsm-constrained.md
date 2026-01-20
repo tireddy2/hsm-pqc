@@ -422,11 +422,12 @@ secret key through out-of-range values that could otherwise bias the distributio
 Second, it ensures that the distribution of valid signatures is statistically close to the ideal
 distribution assumed in the security reduction.
 
-The number of rejections during signature generation depends on three factors:
+The number of rejections during signature generation depends on four factors:
 
 * the message (i.e., the value of &mu)
 * the secret key material, and
 * when hedged signing is used (see {{ML-DSA}}, Section 3.4), the random seed.
+* the context string (see {{FIPS204}}, Section 5.2)
 
 As a result, some message-key combinations may lead to a higher number of rejection iterations
 than others.
