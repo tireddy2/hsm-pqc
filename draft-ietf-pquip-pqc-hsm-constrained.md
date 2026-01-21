@@ -110,16 +110,6 @@ informative:
        - ins: A. Sprenkels
      date: December 2022
   REC-KEM: DOI.10.6028/NIST.SP.800-227
-  SECBOOT:
-     title: "Post-Quantum LMS and SPHINCS+ Hash-Based Signatures for UEFI Secure Boot"
-     target: https://eprint.iacr.org/2021/041
-     author:
-     - ins: P. Kampanakis
-     - ins: P. Panburana
-     - ins: M. Curcio
-     - ins: C. Shroff
-     - ins: M. M. Alam
-     date: June 2021
   Lyu09: DOI.10.1007/978-3-642-10366-7_35
   Li32:
      title: "CRYSTALS-Dilithium: Algorithm Specifications and Supporting Documentation (Version 3.1)"
@@ -161,11 +151,7 @@ constrained platforms.
 
 This document provides guidance and best practices for integrating PQC algorithms into
 constrained devices. It reviews strategies for key storage, ephemeral key management,
-and performance optimization tailored to low-resource environments. One mitigation
-technique for storage limitations is seed-based key generation, where only a compact
-seed is stored instead of the full private key. While this approach conserves memory,
-it introduces additional computational overhead because full private keys must be derived
-on demand—illustrating the classic computation-versus-storage trade-off. The document also
+and performance optimization tailored to low-resource environments. The document also
 examines ephemeral key generation in protocols such as TLS, along with techniques to
 optimize PQC signature operations to improve performance within constrained cryptographic
 modules.
