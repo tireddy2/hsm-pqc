@@ -113,14 +113,26 @@ informative:
   SECBOOT:
      title: "Post-Quantum LMS and SPHINCS+ Hash-Based Signatures for UEFI Secure Boot"
      target: https://eprint.iacr.org/2021/041
-     date: false
-  Lyu09:
-     title: "Fiat-Shamir with Aborts: Applications to Lattice and Factoring-Based Signatures."
-     target: "https://www.iacr.org/archive/asiacrypt2009/59120596/59120596.pdf"
-     date: December 2009
+     author:
+     - ins: P. Kampanakis
+     - ins: P. Panburana
+     - ins: M. Curcio
+     - ins: C. Shroff
+     - ins: M. M. Alam
+     date: June 2021
+  Lyu09: DOI.10.1007/978-3-642-10366-7_35
   Li32:
      title: "CRYSTALS-Dilithium: Algorithm Specifications and Supporting Documentation (Version 3.1)"
      target: "https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf"
+     author:
+     - ins: S. Bai
+     - ins: L. Ducas
+     - ins: E. Kiltz
+     - ins: T. Lepoint
+     - ins: V. Lyubashevsky
+     - ins: P. Schwabe
+     - ins: G. Seiler
+     - ins: D. Stehlé
      date: February 2021
 
 --- abstract
