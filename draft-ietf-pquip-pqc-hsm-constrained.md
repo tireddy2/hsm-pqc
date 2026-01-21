@@ -276,7 +276,7 @@ Operationally, the exported data and the symmetric key used for encryption must 
 
 The encryption and decryption of seeds and private keys must occur entirely within the cryptographic modules to reduce the risk of exposure and ensure compliance to established security standards.
 
-# Ephemeral Key Management
+## Ephemeral Key Management
 
 Given the increased size of PQC key material, ephemeral key management will have to
 be optimized for both security and performance.
