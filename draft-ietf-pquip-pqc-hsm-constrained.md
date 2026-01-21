@@ -60,6 +60,12 @@ informative:
   FIPS204: DOI.10.6028/NIST.FIPS.204
   FIPS205: DOI.10.6028/NIST.FIPS.205
   REC-SHS: DOI.10.6028/NIST.SP.800-208
+  ISO19790:
+    title: "Information security, cybersecurity, and privacy protection — Security requirements for cryptographic modules"
+    target: https://www.iso.org/standard/82423.html
+    author:
+      - org: ISO
+    date: February 2025
   BIND:
     title: "Unbindable Kemmy Schmidt: ML-KEM is neither MAL-BIND-K-CT nor MAL-BIND-K-PK"
     target: https://eprint.iacr.org/2024/523.pdf
@@ -190,7 +196,7 @@ To comply with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}} guidelines:
 
 Several post-quantum algorithms use a seed to generate their private keys (e.g., ML-KEM, ML-DSA, and HQC). Those seeds are smaller than private keys, hence some implementations may choose to retain the seed rather than the full private key to save on storage space. The private key can then be derived from the seed when needed or retained in a cache within the security module.
 
-Since the seed can derive the private key, it must be safeguarded with the same
+The seed is a Critical Security Parameter (CSP) as defined in {{ISO19790}}, from which the private key can be derived, hence it must be safeguarded with the same
 level of protection as a private key. Seeds should be securely stored within a cryptographic module of the device whether hardware or software-based to protect against unauthorized access.
 
    The choice between storing a seed or an expanded private key involves trade-offs
