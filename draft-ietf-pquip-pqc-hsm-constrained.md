@@ -125,8 +125,8 @@ informative:
      - ins: D. Stehlé
      date: February 2021
   NISTSecurityLevels:
-    title: Post-Quantum Cryptography: Security (Evaluation Criteria)
-    target: https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
+    title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
+    target: "https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)"
     author:
     - org: NIST
     date: January 2017
