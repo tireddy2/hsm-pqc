@@ -124,6 +124,12 @@ informative:
      - ins: G. Seiler
      - ins: D. Stehlé
      date: February 2021
+  NISTSecurityLevels:
+    title: Post-Quantum Cryptography: Security (Evaluation Criteria)
+    target: https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
+    author:
+    - org: NIST
+    date: January 2017
 
 --- abstract
 
@@ -548,30 +554,35 @@ constrained devices, which often have limited memory and storage capacity. For e
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, ML-KEM, FN-DSA
-and SLH-DSA. For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
+The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, SLH-DSA, FN-DSA, and ML-KEM, aiming for "Level 1 security", as defined in {{NISTSecurityLevels}}. For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
 are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
 |--------------------|------------------|------------------|
-| ML-DSA-65          | Public Key       | 1952             |
-|                    | Private Key      | 4032             |
-|                    | Signature        | 3309             |
-| SLH-DSA-SHA2-192s  | Public Key       | 48               |
-|                    | Private Key      | 96               |
-|                    | Signature        | 16224            |
+| ML-DSA-44          | Public Key       | 1312             |
+|                    | Private Key      | 2560             |
+|                    | Signature        | 2420             |
+| SLH-DSA-SHA2-128s  | Public Key       | 32               |
+|                    | Private Key      | 64               |
+|                    | Signature        | 7856             |
+| SLH-DSA-SHA2-128f  | Public Key       | 32               |
+|                    | Private Key      | 64               |
+|                    | Signature        | 17088            |
 | FN-DSA-512         | Public Key       | 897              |
 |                    | Private Key      | 1281             |
 |                    | Signature        | 666              |
-| ML-KEM-768         | Public Key       | 1568             |
+| ML-KEM-512         | Public Key       | 800              |
+|                    | Private Key      | 1632             |
+|                    | Ciphertext       | 768              |
 |                    | Shared Secret    | 32               |
 | X25519             | Public Key       | 32               |
+|                    | Private Key      | 32               |
 |                    | Shared Secret    | 32               |
 | Ed25519            | Public Key       | 32               |
+|                    | Private Key      | 32               |
 |                    | Signature        | 64               |
 
-Full key sizes for ML-DSA, ML-KEM, FN-DSA and SLH-DSA are specified in {{FIPS204}}, {{FIPS203}}, {{FN-DSA}}
-and {{FIPS205}} respectively.
+Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, and {{FN-DSA}} for sizes for all parameter sets.
 
 # Post-quantum Firmware Upgrades for Constrained Devices
 
