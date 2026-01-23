@@ -59,7 +59,6 @@ informative:
   FIPS203: DOI.10.6028/NIST.FIPS.203
   FIPS204: DOI.10.6028/NIST.FIPS.204
   FIPS205: DOI.10.6028/NIST.FIPS.205
-  REC-SHS: DOI.10.6028/NIST.SP.800-208
   ISO19790:
     title: "Information security, cybersecurity, and privacy protection — Security requirements for cryptographic modules"
     target: https://www.iso.org/standard/82423.html
@@ -227,9 +226,14 @@ design goals, performance considerations, and standards compliance (e.g., PKCS#1
    While vulnerabilities like the "Unbindable Kemmy Schmidt" misbinding attack {{BIND}} demonstrate
 the risks of manipulating expanded private keys in environments lacking hardware-backed
 protections, these attacks generally assume an adversary has some level of control over
-the expanded key format. However, in a hardware-backed protcted environment, where private
+the expanded key format. However, in a hardware-backed protected environment, where private
 keys are typically protected from such manipulation, the primary motivation for storing
 the seed rather than the expanded key is not directly tied to mitigating such misbinding attacks.
+
+   If the seed is not securely stored at the time of key generation, it is permanently
+lost because the process of deriving an expanded key from the seed relies on a one-way
+cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
+deriving the original seed from the expanded key, is computationally infeasible.
 
    A challenge arises when importing an existing private key into a system designed to
 store only seeds. When a user attempts to import an already expanded private key, there is
@@ -239,10 +243,6 @@ by deriving the private key from the seed, while the expanded private key is alr
 computed. As NIST has not defined a single private key format for PQC algorithms, this
 creates a potential gap in interoperability.
 
-   If the seed is not securely stored at the time of key generation, it is permanently
-lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
-deriving the original seed from the expanded key, is computationally infeasible.
 
 ### Efficient Key Derivation
 
@@ -251,7 +251,7 @@ the device is capable of deriving the private key efficiently whenever required.
 repeatedly re-deriving the private key for every
 cryptographic operation may introduce significant performance overhead. In scenarios where
 performance is a critical consideration, it may be more efficient to store the expanded
-private key directly instead of only the seed. Implementations may choose to 
+private key directly (in addition to the seed). Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
 overhead and delay of deriving private keys from their seeds with each request.
 
@@ -321,9 +321,9 @@ Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimiz
 
 ## Memory requirements of Lattice-Based Schemes
 
-The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversly, the sizes of those matrices depend on the security level.
+The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversely, the sizes of those matrices depend on the security level.
 
-To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straighforward implementation, the mimual amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
+To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
 It's worth nothing that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
@@ -331,11 +331,11 @@ It's worth nothing that different cryptographic operations may have different me
 
 The lazy expansion technique is an optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
 
-As an example, we can look at the computation of matrix-vector multiplication t=A⋅s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarily, the vector s1 is expanded from random seed and a nonce using a PRF.
+As an example, we can look at the computation of matrix-vector multiplication t=A⋅s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
 
 The lazy expansion would first generate first element of a vector s1 (s1[0]) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (s1[1]) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 * 2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5 * 256 * 2 = 2560 bytes) + one element of t (5 * 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
-Using lazy expansion forces algorithm implementation to slightly differ from straighforward implementation. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
+Using lazy expansion forces algorithm implementation to slightly differ from straightforward implementation. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
 Further memory optimizations to ML-DSA can be found in {{BosRS22}}.
 
@@ -415,9 +415,9 @@ distribution assumed in the security reduction.
 
 The number of rejections during signature generation depends on four factors:
 
-* the message (i.e., the value of &mu)
-* the secret key material, and
-* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed.
+* the message (i.e., the value of &mu;)
+* the secret key material
+* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed
 * the context string (see {{FIPS204}}, Section 5.2)
 
 As a result, some message-key combinations may lead to a higher number of rejection iterations
@@ -647,7 +647,7 @@ unauthorized access.
 
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, their significance in secure hardware design cannot be understated. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
 
-# Acknowledgements
+# Acknowledgments
 {:numbered="false"}
 
 Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, and Aritra Banerjee for
