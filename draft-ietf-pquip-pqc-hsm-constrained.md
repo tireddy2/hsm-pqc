@@ -222,6 +222,11 @@ the expanded key format. However, in a hardware-backed protcted environment, whe
 keys are typically protected from such manipulation, the primary motivation for storing
 the seed rather than the expanded key is not directly tied to mitigating such misbinding attacks.
 
+   If the seed is not securely stored at the time of key generation, it is permanently
+lost because the process of deriving an expanded key from the seed relies on a one-way
+cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
+deriving the original seed from the expanded key, is computationally infeasible.
+
    A challenge arises when importing an existing private key into a system designed to
 store only seeds. When a user attempts to import an already expanded private key, there is
 a mismatch between the key format used internally (seed-based) and the expanded private
@@ -230,10 +235,6 @@ by deriving the private key from the seed, while the expanded private key is alr
 computed. As NIST has not defined a single private key format for PQC algorithms, this
 creates a potential gap in interoperability.
 
-   If the seed is not securely stored at the time of key generation, it is permanently
-lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
-deriving the original seed from the expanded key, is computationally infeasible.
 
 ### Efficient Key Derivation
 
@@ -242,7 +243,7 @@ the device is capable of deriving the private key efficiently whenever required.
 repeatedly re-deriving the private key for every
 cryptographic operation may introduce significant performance overhead. In scenarios where
 performance is a critical consideration, it may be more efficient to store the expanded
-private key directly instead of only the seed. Implementations may choose to 
+private key directly instead of only the seed. Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
 overhead and delay of deriving private keys from their seeds with each request.
 
