@@ -624,8 +624,6 @@ This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
 Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
 
-Similar signature verification constraints can also apply to other on-device verification tasks, such as validating signed attestation evidence presented during remote attestation procedures, as per {{?RFC9334}}.
-
 ## Hybrid Signature Approaches
 
 To enable secure migration from traditional to post-quantum security, hybrid signature methods can be used for
