@@ -123,6 +123,12 @@ informative:
      - ins: G. Seiler
      - ins: D. Stehlé
      date: February 2021
+  NISTSecurityLevels:
+    title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
+    target: "https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)"
+    author:
+    - org: NIST
+    date: January 2017
 
 --- abstract
 
@@ -147,6 +153,9 @@ PQC algorithms in such environments is difficult due to their substantially larg
 sizes and, in some cases, higher computational demands. Consequently, the migration to
 PQC requires careful planning to ensure secure and efficient key management within
 constrained platforms.
+
+Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
+As a result, designers may need to consider PQ solutions to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
 This document provides guidance and best practices for integrating PQC algorithms into
 constrained devices. It reviews strategies for key storage, ephemeral key management,
@@ -299,12 +308,14 @@ Constrained devices implementing PQC ephemeral key management will have to:
   * Delete the private key after the shared secret is derived.
   * Prevent key reuse across different algorithm suites or sessions.
 
-# Optimizing Memory Footprint in Lattice-Based schemes
+# Optimizing Memory Footprint in Post-Quantum Signature Schemes
 
-A key consideration when deploying ML-DSA in cryptographic module is the amount of memory available. ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant memory during signing due to multiple Number Theoretic Transform (NTT)
+A key consideration when deploying post-quantum cryptography in cryptographic modules is the amount of memory available. For instance, ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant memory during signing due to multiple Number Theoretic Transform (NTT)
 operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive.
 
-Some constrained systems, i.e. those battery-operated, may have very limited RAM available for cryptographic operations. In such cases, straightforward implementations of ML-DSA may exceed the available memory, making it infeasible to use without optimizations.
+Some constrained systems, i.e. those battery-operated, may have very limited RAM available for cryptographic operations. In such cases, straightforward implementations of PQ schemes may exceed the available memory, making it infeasible to use without optimizations.
+
+Several post-quantum schemes can be optimized to reduce the memory footprint of the algorithm. For instance, SLH-DSA has two flavours: the "f" variants which are parameterized to run as fast as possible, and the "s" variants which produce shorter signatures. Developers wishing to use SLH-DSA may wish to utilize the "s" variants on devices with insufficient RAM to use the "f" variants. Further optimizations may be possible by running the signature algorithm in a "streaming manner" such that constrained device does not need to hold the entire signature in memory at once, as discussed in {{Stream-SPHINCS}}.
 
 Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimization techniques that can be applied to make ML-DSA more feasible in constrained cryptographic modules are discussed in {{lazy-expansion}} and {{pre-hashing}}.
 
@@ -325,6 +336,8 @@ As an example, we can look at the computation of matrix-vector multiplication t=
 The lazy expansion would first generate first element of a vector s1 (s1[0]) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (s1[1]) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 * 2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5 * 256 * 2 = 2560 bytes) + one element of t (5 * 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
 Using lazy expansion forces algorithm implementation to slightly differ from straightforward implementation. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
+
+Further memory optimizations to ML-DSA can be found in {{BosRS22}}.
 
 ## Pre-hashing as a Memory Optimization Technique {#pre-hashing}
 
@@ -541,30 +554,35 @@ constrained devices, which often have limited memory and storage capacity. For e
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, ML-KEM, FN-DSA
-and SLH-DSA. For comparison we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
+The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, SLH-DSA, FN-DSA, and ML-KEM, aiming for "Level 1 security", as defined in {{NISTSecurityLevels}}. For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
 are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
 |--------------------|------------------|------------------|
-| ML-DSA-65          | Public Key       | 1952             |
-|                    | Private Key      | 4032             |
-|                    | Signature        | 3309             |
-| SLH-DSA-SHA2-192s  | Public Key       | 48               |
-|                    | Private Key      | 96               |
-|                    | Signature        | 16224            |
+| ML-DSA-44          | Public Key       | 1312             |
+|                    | Private Key      | 2560             |
+|                    | Signature        | 2420             |
+| SLH-DSA-SHA2-128s  | Public Key       | 32               |
+|                    | Private Key      | 64               |
+|                    | Signature        | 7856             |
+| SLH-DSA-SHA2-128f  | Public Key       | 32               |
+|                    | Private Key      | 64               |
+|                    | Signature        | 17088            |
 | FN-DSA-512         | Public Key       | 897              |
 |                    | Private Key      | 1281             |
 |                    | Signature        | 666              |
-| ML-KEM-768         | Public Key       | 1568             |
+| ML-KEM-512         | Public Key       | 800              |
+|                    | Private Key      | 1632             |
+|                    | Ciphertext       | 768              |
 |                    | Shared Secret    | 32               |
 | X25519             | Public Key       | 32               |
+|                    | Private Key      | 32               |
 |                    | Shared Secret    | 32               |
 | Ed25519            | Public Key       | 32               |
+|                    | Private Key      | 32               |
 |                    | Signature        | 64               |
 
-Full key sizes for ML-DSA, ML-KEM, FN-DSA and SLH-DSA are specified in {{FIPS204}}, {{FIPS203}}, {{FN-DSA}}
-and {{FIPS205}} respectively.
+Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, and {{FN-DSA}} for sizes for all parameter sets.
 
 # Post-quantum Firmware Upgrades for Constrained Devices
 
@@ -614,55 +632,6 @@ attached separately, is simple to implement, requires minimal changes to existin
 current secure boot and update architectures.
 
 Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows.
-
-# Impact of PQC Authentication on Constrained Devices
-
-In constrained environments, devices are typically assumed to function as clients that initiate outbound connections,
-authenticating to servers using certificates or raw public keys ({{!RFC7250}}). However, some devices also serve in
-server roles, enforcing local authentication policies. These scenarios require support for both outbound and inbound
-authentication, and both roles face significant challenges when adopting post-quantum cryptography (PQC). Additionally,
-verifying digital signatures such as during secure boot or firmware updates is a critical operation for constrained devices,
-regardless of whether they act as clients or servers.
-
-While specific deployment scenarios may differ, the fundamental technical impacts of PQC authentication in constrained devices can be summarized into three main areas:
-
-* Larger Signatures and Certificate Sizes
-
-   Post-quantum signature schemes typically produce much larger public keys and signatures than their traditional
-   counterparts. A comparison is provided in {{sec-key-sizes}}.
-
-   These larger artifacts introduce several challenges. For example, certificate chains with PQC public keys
-   require more storage, and trust anchors -- particularly for schemes like SLH-DSA -- may be too large to embed in
-   constrained ROM.
-
-   Furthermore, validating signed payloads or commands increases network bandwidth requirements. In the case of large
-   hash-based signatures, implementations may adopt streaming verification, where only parts of the message are
-   processed at a time to reduce memory usage. An example of such an approach for SLH-DSA is described in
-   {{Stream-SPHINCS}}.
-
-* Increased RAM usage and performance profile.
-
-   Post-quantum signature verification often demands significantly more RAM than traditional schemes used for
-   asymmetric cryptography. For example, ML-DSA-65 in its high-performance configuration may require over 68 KB of
-   memory during signing and up to 10 KB during verification on Cortex-M4-class devices.
-
-   This poses challenges for use cases such as firmware verification (e.g. secure boot) and certificate validation
-   or the generation of signed claims about the device's hardware and software state, a process generally referred
-   to as device attestation. As part of this remote attestation procedure {{!RFC9334}}, the device will need to present such claims
-   to a remote peer, signed using an attestation key. To remain secure against CRQCs, the attestation mechanism must also
-   employ quantum-safe cryptographic primitives.
-
-   Several memory-optimized implementations exist (see {{BosRS22}}), but they typically trade memory savings for
-   slower performance. For instance, the ML-DSA.Sign operation can be implemented within 8 KB of RAM, though at
-   the cost of significantly increased runtime. Conversely, ML-DSA.Verify can be performed in as little as 3 KB of
-   RAM without a major performance penalty.
-
-   Devices with 8-16 KB of available RAM must often balance performance against feasibility when integrating PQC
-   signature verification.
-
-When constrained devices must authenticate inbound connections, validate commands, or verify stored data, PQC authentication
-imposes a burden that must be explicitly addressed through selection of schemes with smaller signature sizes (e.g. FN-DSA).
-These choices should be aligned with the device’s operational profile, available memory, and longevity requirements.
 
 # Security Considerations
 
