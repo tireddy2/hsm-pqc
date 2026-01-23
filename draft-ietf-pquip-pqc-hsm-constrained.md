@@ -242,7 +242,7 @@ the device is capable of deriving the private key efficiently whenever required.
 repeatedly re-deriving the private key for every
 cryptographic operation may introduce significant performance overhead. In scenarios where
 performance is a critical consideration, it may be more efficient to store the expanded
-private key directly instead of only the seed. Implementations may choose to 
+private key directly instead of only the seed. Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
 overhead and delay of deriving private keys from their seeds with each request.
 
@@ -402,9 +402,9 @@ distribution assumed in the security reduction.
 
 The number of rejections during signature generation depends on four factors:
 
-* the message (i.e., the value of &mu)
-* the secret key material, and
-* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed.
+* the message (i.e., the value of &mu;)
+* the secret key material
+* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed
 * the context string (see {{FIPS204}}, Section 5.2)
 
 As a result, some message-key combinations may lead to a higher number of rejection iterations
