@@ -242,7 +242,7 @@ the device is capable of deriving the private key efficiently whenever required.
 repeatedly re-deriving the private key for every
 cryptographic operation may introduce significant performance overhead. In scenarios where
 performance is a critical consideration, it may be more efficient to store the expanded
-private key directly instead of only the seed. Implementations may choose to 
+private key directly (in addition to the seed). Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
 overhead and delay of deriving private keys from their seeds with each request.
 
