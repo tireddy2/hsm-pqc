@@ -401,9 +401,9 @@ distribution assumed in the security reduction.
 
 The number of rejections during signature generation depends on four factors:
 
-* the message (i.e., the value of &mu)
-* the secret key material, and
-* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed.
+* the message (i.e., the value of &mu;)
+* the secret key material
+* when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed
 * the context string (see {{FIPS204}}, Section 5.2)
 
 As a result, some message-key combinations may lead to a higher number of rejection iterations
