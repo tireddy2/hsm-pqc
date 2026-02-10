@@ -230,10 +230,10 @@ the expanded key format. However, in a hardware-backed protected environment, wh
 keys are typically protected from such manipulation, the primary motivation for storing
 the seed rather than the expanded key is not directly tied to mitigating such misbinding attacks.
 
-   If the seed is not securely stored at the time of key generation, it is permanently
-lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
-deriving the original seed from the expanded key, is computationally infeasible.
+The expanded private key is derived from the seed using a one-way cryptographic function.
+As a result, if the seed is not retained at key generation time, it cannot be reconstructed
+from the expanded key (the reverse operation is computationally infeasible). Implementations
+should account for this non-recoverability when designing seed management.
 
    A challenge arises when importing an existing private key into a system designed to
 store only seeds. When a user attempts to import an already expanded private key, there is
