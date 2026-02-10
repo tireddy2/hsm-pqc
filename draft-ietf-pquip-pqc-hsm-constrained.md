@@ -131,7 +131,7 @@ informative:
     date: January 2017
   Bot19:
      title: "Memory-Efficient High-Speed Implementation of Kyber on Cortex-M4"
-     target: "https://eprint.iacr.org/2022/323.pdf"
+     target: "https://eprint.iacr.org/2019/489.pdf"
      author:
        - ins: L. Botros
        - ins: M.J. Kannwischer
