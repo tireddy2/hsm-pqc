@@ -497,7 +497,7 @@ a practical concern for ML-DSA deployments on constrained devices with limited e
 capability and may require additional consideration.
 
 This consideration primarily applies to devices that perform ML-DSA signing. Devices that only
-generate ML-DSA keys or verify signatures are not affected, as those operations does not involve
+generate ML-DSA keys or verify signatures are not affected, as those operations do not involve
 rejection sampling and have deterministic execution times.
 
 ### Suggestions for benchmarking ML-DSA Signing Performance
