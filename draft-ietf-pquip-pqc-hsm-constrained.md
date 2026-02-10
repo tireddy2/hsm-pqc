@@ -129,6 +129,15 @@ informative:
     author:
     - org: NIST
     date: January 2017
+  Bot19:
+     title: "Memory-Efficient High-Speed Implementation of Kyber on Cortex-M4"
+     target: "https://eprint.iacr.org/2022/323.pdf"
+     author:
+       - ins: L. Botros
+       - ins: M.J. Kannwischer
+       - ins: P. Schwabe
+     date: 2019
+  Gre20: DOI.10.46586/tches.v2021.i1.1-24
 
 --- abstract
 
@@ -337,7 +346,7 @@ The lazy expansion would first generate first element of a vector s1 (s1[0]) and
 
 With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
-Further memory optimizations to ML-DSA can be found in {{BosRS22}}.
+This memory optimization was initially described in {{Bot19}}. The other optimization can also be found in {{Gre20}} and {{BosRS22}}.
 
 ## Pre-hashing as a Memory Optimization Technique {#pre-hashing}
 
