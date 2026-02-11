@@ -134,7 +134,7 @@ informative:
      target: "https://eprint.iacr.org/2019/489.pdf"
      author:
        - ins: L. Botros
-       - ins: M.J. Kannwischer
+       - ins: M. J. Kannwischer
        - ins: P. Schwabe
      date: May 2019
   Gre20: DOI.10.46586/tches.v2021.i1.1-24
