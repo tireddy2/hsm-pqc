@@ -129,6 +129,15 @@ informative:
     author:
     - org: NIST
     date: January 2017
+  Bot19:
+     title: "Memory-Efficient High-Speed Implementation of Kyber on Cortex-M4"
+     target: "https://eprint.iacr.org/2019/489.pdf"
+     author:
+       - ins: L. Botros
+       - ins: M. J. Kannwischer
+       - ins: P. Schwabe
+     date: May 2019
+  Gre20: DOI.10.46586/tches.v2021.i1.1-24
 
 --- abstract
 
@@ -230,10 +239,10 @@ the expanded key format. However, in a hardware-backed protected environment, wh
 keys are typically protected from such manipulation, the primary motivation for storing
 the seed rather than the expanded key is not directly tied to mitigating such misbinding attacks.
 
-   If the seed is not securely stored at the time of key generation, it is permanently
-lost because the process of deriving an expanded key from the seed relies on a one-way
-cryptographic function. This one-way function derives the private key from the seed, but the reverse operation,
-deriving the original seed from the expanded key, is computationally infeasible.
+The expanded private key is derived from the seed using a one-way cryptographic function.
+As a result, if the seed is not retained at key generation time, it cannot be reconstructed
+from the expanded key (as the reverse operation is computationally infeasible). Implementations
+should account for this non-recoverability when designing seed management.
 
    A challenge arises when importing an existing private key into a system designed to
 store only seeds. When a user attempts to import an already expanded private key, there is
@@ -325,7 +334,7 @@ The dominant source of memory usage in ML-DSA comes from holding the expanded ma
 
 To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
-It's worth nothing that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
+It's worth noting that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
 ### Lazy Expansion as a Memory Optimization Technique {#lazy-expansion}
 
@@ -337,7 +346,7 @@ The lazy expansion would first generate first element of a vector s1 (s1[0]) and
 
 With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
-Further memory optimizations to ML-DSA can be found in {{BosRS22}}.
+This memory optimization was initially described in {{Bot19}}. Other optimizations can be found in {{Gre20}} and {{BosRS22}}.
 
 ## Pre-hashing as a Memory Optimization Technique {#pre-hashing}
 
@@ -488,7 +497,7 @@ a practical concern for ML-DSA deployments on constrained devices with limited e
 capability and may require additional consideration.
 
 This consideration primarily applies to devices that perform ML-DSA signing. Devices that only
-generate ML-DSA keys or verify signatures are not affected, as those operations does not involve
+generate ML-DSA keys or verify signatures are not affected, as those operations do not involve
 rejection sampling and have deterministic execution times.
 
 ### Suggestions for benchmarking ML-DSA Signing Performance
