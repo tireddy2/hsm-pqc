@@ -241,7 +241,7 @@ the seed rather than the expanded key is not directly tied to mitigating such mi
 
 The expanded private key is derived from the seed using a one-way cryptographic function.
 As a result, if the seed is not retained at key generation time, it cannot be reconstructed
-from the expanded key (the reverse operation is computationally infeasible). Implementations
+from the expanded key (as the reverse operation is computationally infeasible). Implementations
 should account for this non-recoverability when designing seed management.
 
    A challenge arises when importing an existing private key into a system designed to
