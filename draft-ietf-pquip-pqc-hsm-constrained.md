@@ -77,7 +77,7 @@ informative:
      author:
        - ins: Gaborit et al.
      date: August 2025
-  FN-DSA:
+  Falcon:
      title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
      target: https://falcon-sign.info/falcon.pdf
      author:
@@ -138,6 +138,13 @@ informative:
        - ins: P. Schwabe
      date: May 2019
   Gre20: DOI.10.46586/tches.v2021.i1.1-24
+  Smaller-SPHINCS:
+    title: "Smaller Sphincs+ or, Honey, I Shrunk the Signatures
+    target: "https://eprint.iacr.org/2024/018.pdf"
+    author:
+      - ins: S. Fluhrer
+      - ins: Q. Dang
+    date: January 2024
 
 --- abstract
 
@@ -173,17 +180,18 @@ examines ephemeral key generation in protocols such as TLS, along with technique
 optimize PQC signature operations to improve performance within constrained cryptographic
 modules.
 
-The focus is on PQC in constrained devices, with particular attention to the three
-algorithms standardized by NIST:
+This document focuses on algorithms that have been standardised, and have draft or final standards currently in the IETF. Specificaly, we focus on the following algorithms:
 
-- Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}},
-- Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}, and
+- Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
+- Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}.
 - Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{FIPS205}}.
+- Hierarchical Signature System/Leighton-Micali Signature (HSS/LMS) {{?RFC8554}}, and the related eXtended Merkle Signature Scheme (XMSS) {{?RFC8391}}.
 
-The Hierarchical Signature System/Leighton–Micali Signature (HSS/LMS) {{?RFC8554}} is
-also considered in the context of firmware signing. Future revisions may extend the scope
-to additional PQC algorithms, such as the Hamming Quasi-Cyclic (HQC) KEM {{HQC}} and the Fast
-Fourier Transform over NTRU-Lattice-Based Digital Signature Algorithm (FN-DSA) {{FN-DSA}}.
+Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future revisions of this document may provide guidance on the following algorithms:
+
+- The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, though its use of floating point arithmetic may make it challenging to implement on some devices.
+- THe HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is less performant than ML-KEM.
+- Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardised in future, which may make use of SLH-DSA more palatable on constrained devices.
 
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
 Actual protocol behaviour is defined in other documents.
@@ -209,7 +217,7 @@ To comply with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}} guidelines:
 
 ### Seed Storage
 
-Several post-quantum algorithms use a seed to generate their private keys (e.g., ML-KEM, ML-DSA, and HQC). Those seeds are smaller than private keys, hence some implementations may choose to retain the seed rather than the full private key to save on storage space. The private key can then be derived from the seed when needed or retained in a cache within the security module.
+Several post-quantum algorithms use a seed to generate their private keys (e.g., ML-KEM and ML-DSA). Those seeds are smaller than private keys, hence some implementations may choose to retain the seed rather than the full private key to save on storage space. The private key can then be derived from the seed when needed or retained in a cache within the security module.
 
 The seed is a Critical Security Parameter (CSP) as defined in {{ISO19790}}, from which the private key can be derived, hence it must be safeguarded with the same
 level of protection as a private key. Seeds should be securely stored within a cryptographic module of the device whether hardware or software-based to protect against unauthorized access.
@@ -334,7 +342,7 @@ The dominant source of memory usage in ML-DSA comes from holding the expanded ma
 
 To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 * 5 * 256 * 2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5 * 256 * 2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3 * 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
-It's worth noting that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
+It is worth noting that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
 ### Lazy Expansion as a Memory Optimization Technique {#lazy-expansion}
 
@@ -563,8 +571,8 @@ constrained devices, which often have limited memory and storage capacity. For e
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, SLH-DSA, FN-DSA, and ML-KEM, aiming for "Level 1 security", as defined in {{NISTSecurityLevels}}. For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which
-are traditional schemes widely used in constrained environments.
+The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, SLH-DSA, and ML-KEM, aiming for "Level 1 security", as defined in {{NISTSecurityLevels}}, and for HSS/LMS and XMSS instantiations aiming for 128 bits of security.
+For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which are traditional schemes widely used in constrained environments.
 
 | Algorithm          | Type             | Size (bytes)     |
 |--------------------|------------------|------------------|
@@ -577,9 +585,12 @@ are traditional schemes widely used in constrained environments.
 | SLH-DSA-SHA2-128f  | Public Key       | 32               |
 |                    | Private Key      | 64               |
 |                    | Signature        | 17088            |
-| FN-DSA-512         | Public Key       | 897              |
-|                    | Private Key      | 1281             |
-|                    | Signature        | 666              |
+| LMS_SHA256_H5_W8   | Public Key       | 60               |
+|                    | Private Key      | 64               |
+|                    | Signature        | 1296             |
+| XMSS-SHA2_10_192   | Public Key       | 48               |
+|                    | Private Key      | 1053             |
+|                    | Signature        | 1492             |
 | ML-KEM-512         | Public Key       | 800              |
 |                    | Private Key      | 1632             |
 |                    | Ciphertext       | 768              |
@@ -591,7 +602,7 @@ are traditional schemes widely used in constrained environments.
 |                    | Private Key      | 32               |
 |                    | Signature        | 64               |
 
-Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, and {{FN-DSA}} for sizes for all parameter sets.
+Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}} for sizes for all parameter sets.
 
 # Post-quantum Firmware Upgrades for Constrained Devices
 
@@ -635,8 +646,8 @@ Cryptographers are more confident still in the security of hash-based signatures
 
 ## Hybrid Signature Approaches
 
-To enable secure migration from traditional to post-quantum security, hybrid signature methods can be used for
-firmware authentication. Parallel signatures, where a traditional and a post-quantum signature are generated and
+To enable secure migration from traditional to post-quantum security, PQ/T hybrid digital signature methods can be used for firmware authentication. There are many hybrid signature schemes with varying security guarantees as outlined in {{?I-D.ietf-pquip-hybrid-signature-spectrums}}.
+Parallel signatures, where a traditional and a post-quantum signature are generated and
 attached separately, is simple to implement, requires minimal changes to existing signing, and aligns well with
 current secure boot and update architectures.
 
