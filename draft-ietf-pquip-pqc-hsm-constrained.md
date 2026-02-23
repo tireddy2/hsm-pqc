@@ -190,7 +190,7 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future revisions of this document may provide guidance on the following algorithms:
 
 - The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, though its use of floating point arithmetic may make it challenging to implement on some devices.
-- THe HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is less performant than ML-KEM.
+- The HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is less performant than ML-KEM.
 - Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardised in future, which may make use of SLH-DSA more palatable on constrained devices.
 
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
