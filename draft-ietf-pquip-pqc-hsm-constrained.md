@@ -180,7 +180,7 @@ examines ephemeral key generation in protocols such as TLS, along with technique
 optimize PQC signature operations to improve performance within constrained cryptographic
 modules.
 
-This document focuses on algorithms that have been standardised, and have draft or final standards currently in the IETF. Specificaly, we focus on the following algorithms:
+This document focuses on PQC algorithms standardized by NIST or specified by the IRTF CFRG, and that have corresponding IETF protocol specifications, either published as RFCs or progressing through the IETF standards process. Specifically, it covers the following algorithms:
 
 - Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}.
