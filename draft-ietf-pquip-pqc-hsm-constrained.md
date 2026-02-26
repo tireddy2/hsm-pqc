@@ -139,7 +139,7 @@ informative:
      date: May 2019
   Gre20: DOI.10.46586/tches.v2021.i1.1-24
   Smaller-SPHINCS:
-    title: "Smaller Sphincs+ or, Honey, I Shrunk the Signatures
+    title: "Smaller Sphincs+ or, Honey, I Shrunk the Signatures"
     target: "https://eprint.iacr.org/2024/018.pdf"
     author:
       - ins: S. Fluhrer
