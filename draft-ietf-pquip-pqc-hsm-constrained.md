@@ -59,6 +59,7 @@ informative:
   FIPS203: DOI.10.6028/NIST.FIPS.203
   FIPS204: DOI.10.6028/NIST.FIPS.204
   FIPS205: DOI.10.6028/NIST.FIPS.205
+  SP800-208: DOI.10.6028/NIST.SP.800-208
   ISO19790:
     title: "Information security, cybersecurity, and privacy protection — Security requirements for cryptographic modules"
     target: https://www.iso.org/standard/82423.html
@@ -571,38 +572,37 @@ constrained devices, which often have limited memory and storage capacity. For e
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table provides the sizes of cryptographic artifacts associated with instantiations of ML-DSA, SLH-DSA, and ML-KEM, aiming for "Level 1 security", as defined in {{NISTSecurityLevels}}, and for HSS/LMS and XMSS instantiations aiming for 128 bits of security.
-For comparision we also include the sizes of cryptographic artifacts associated with X25519 and Ed25519, which are traditional schemes widely used in constrained environments.
+The following table lists the sizes of cryptographic artifacts for representative instantiations of SLH-DSA and ML-KEM at NIST Security Level 1, as defined in {{NISTSecurityLevels}}, ML-DSA at NIST Security Level 2, and HSS/LMS and XMSS at NIST Security Level 3; these are the lowest defined security levels for the respective schemes.
 
-| Algorithm          | Type             | Size (bytes)     |
-|--------------------|------------------|------------------|
-| ML-DSA-44          | Public Key       | 1312             |
-|                    | Private Key      | 2560             |
-|                    | Signature        | 2420             |
-| SLH-DSA-SHA2-128s  | Public Key       | 32               |
-|                    | Private Key      | 64               |
-|                    | Signature        | 7856             |
-| SLH-DSA-SHA2-128f  | Public Key       | 32               |
-|                    | Private Key      | 64               |
-|                    | Signature        | 17088            |
-| LMS_SHA256_H5_W8   | Public Key       | 60               |
-|                    | Private Key      | 64               |
-|                    | Signature        | 1296             |
-| XMSS-SHA2_10_192   | Public Key       | 48               |
-|                    | Private Key      | 1053             |
-|                    | Signature        | 1492             |
-| ML-KEM-512         | Public Key       | 800              |
-|                    | Private Key      | 1632             |
-|                    | Ciphertext       | 768              |
-|                    | Shared Secret    | 32               |
-| X25519             | Public Key       | 32               |
-|                    | Private Key      | 32               |
-|                    | Shared Secret    | 32               |
-| Ed25519            | Public Key       | 32               |
-|                    | Private Key      | 32               |
-|                    | Signature        | 64               |
+| Algorithm             | Type             | Size (bytes) |
+|-----------------------|------------------|--------------|
+| ML-DSA-44             | Public Key       | 1312         |
+|                       | Private Key      | 2560         |
+|                       | Signature        | 2420         |
+| SLH-DSA-SHA2-128s     | Public Key       | 32           |
+|                       | Private Key      | 64           |
+|                       | Signature        | 7856         |
+| SLH-DSA-SHA2-128f     | Public Key       | 32           |
+|                       | Private Key      | 64           |
+|                       | Signature        | 17088        |
+| LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
+|                       | Private Key      | 44           |
+|                       | Signature        | 2004         |
+| XMSS-SHA2_10_192      | Public Key       | 48           |
+|                       | Private Key      | 104          |
+|                       | Signature        | 1492         |
+| ML-KEM-512            | Public Key       | 800          |
+|                       | Private Key      | 1632         |
+|                       | Ciphertext       | 768          |
+|                       | Shared Secret    | 32           |
+| X25519                | Public Key       | 32           |
+|                       | Private Key      | 32           |
+|                       | Shared Secret    | 32           |
+| Ed25519               | Public Key       | 32           |
+|                       | Private Key      | 32           |
+|                       | Signature        | 64           |
 
-Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}} for sizes for all parameter sets.
+Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
 
 # Post-quantum Firmware Upgrades for Constrained Devices
 
