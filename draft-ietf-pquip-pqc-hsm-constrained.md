@@ -189,6 +189,7 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 - Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}.
 - Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{FIPS205}}.
+
 - Hierarchical Signature System/Leighton-Micali Signature (HSS/LMS) {{?RFC8554}}, and the related eXtended Merkle Signature Scheme (XMSS) {{?RFC8391}}.
 
 Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
@@ -232,14 +233,14 @@ prefer storing the full expanded key to reduce computational overhead during key
 implications on performance, as key derivation incurs additional computation. The impact
 of this overhead varies depending on the algorithm. For instance, ML-DSA key generation,
 which primarily involves polynomial operations using the Number Theoretic Transform (NTT)
-and hashing, is computationally efficient compared to other post-quantum schemes. In
-contrast, SLH-DSA key generation requires constructing a Merkle tree and multiple calls to
-Winternitz One-Time Signature (WOTS+) key generation, making it significantly slower due
-to the recursive hash computations involved. Designers of constrained systems must
-carefully balance storage efficiency and computational overhead based on system
-requirements and operational constraints. While constrained systems employ various key
-storage strategies, the decision to store full private keys or only seeds depends on
-design goals, performance considerations, and standards compliance (e.g., PKCS#11).
+and hashing, is computationally efficient compared to other post-quantum schemes. In contrast,
+SLH-DSA key generation requires constructing a Merkle tree and multiple Winternitz One-Time
+Signature (WOTS+) key generations, making it significantly more computationally intensive. In
+many embedded deployments, SLH-DSA may be used primarily for firmware verification, in which
+case key generation is performed offline and does not impact device performance. However,
+in scenarios where the device generates its own SLH-DSA key pairs, the higher key generation
+cost may influence seed-storage design decisions and depend on performance considerations
+or standards compliance (e.g., PKCS#11).
 
    While vulnerabilities like the "Unbindable Kemmy Schmidt" misbinding attack {{BIND}} demonstrate
 the risks of manipulating expanded private keys in environments lacking hardware-backed
@@ -394,8 +395,10 @@ for signing. By signing the digest of the content rather than the entire content
 communication between the application and the cryptographic module is minimized, enabling
 better performance. This method is applicable for any PQC signature algorithm, whether it
 is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
+
 often provided to pre-hash or process the message in a way that avoids sending the entire
 raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
+
 their construction, which requires multiple passes over the message digest during the
 signing process. The signer does not retain the entire message or its full digest in
 memory at once. Instead, different parts of the message digest are processed sequentially
@@ -579,9 +582,11 @@ The following table lists the sizes of cryptographic artifacts for representativ
 |                       | Private Key      | 2560         |
 |                       | Signature        | 2420         |
 | SLH-DSA-SHA2-128s     | Public Key       | 32           |
+
 |                       | Private Key      | 64           |
 |                       | Signature        | 7856         |
 | SLH-DSA-SHA2-128f     | Public Key       | 32           |
+
 |                       | Private Key      | 64           |
 |                       | Signature        | 17088        |
 | LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
@@ -634,11 +639,13 @@ However, in the case of firmware updates, the OTS keys will be signing versioned
 Other post-quantum signature algorithms may also be viable for firmware signing:
 
 - SLH-DSA, a stateless hash-based signature specified in {{FIPS205}}, also has well-understood security based on the security of its underlying hash function, and additionally doesn't have the complexities associated with state management that HSS and XMSS have.
+
 However, signature generation and verification are comparatively slow, and signature sizes are generally larger than other post-quantum algorithms.
 SLH-DSA's suitability as a firmware signing algorithm will depend on the capabilities of the underlying hardware.
 
 - ML-DSA is a lattice-based signature algorithm specified in {{FIPS204}}.
 It is more performant than SLH-DSA, with significantly faster signing and verification times, as well as shorter signatures.
+
 This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
 Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
