@@ -236,7 +236,7 @@ which primarily involves polynomial operations using the Number Theoretic Transf
 and hashing, is computationally efficient compared to other post-quantum schemes. In contrast,
 SLH-DSA key generation requires constructing a Merkle tree and multiple Winternitz One-Time
 Signature (WOTS+) key generations, making it significantly more computationally intensive. In
-many embedded deployments, SLH-DSA may be used primarily for firmware verification, in which
+many embedded deployments, SLH-DSA is expected to be used primarily for firmware verification, in which
 case key generation is performed offline and does not impact device performance. However,
 in scenarios where the device generates its own SLH-DSA key pairs, the higher key generation
 cost may influence seed-storage design decisions and depend on performance considerations
