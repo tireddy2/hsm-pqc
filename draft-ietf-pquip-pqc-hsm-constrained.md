@@ -655,12 +655,13 @@ Cryptographers are more confident still in the security of hash-based signatures
 
 ## Hybrid Signature Approaches
 
-To enable secure migration from traditional to post-quantum security, PQ/T hybrid digital signature methods can be used for firmware authentication. There are many hybrid signature schemes with varying security guarantees as outlined in {{?I-D.ietf-pquip-hybrid-signature-spectrums}}.
-Parallel signatures, where a traditional and a post-quantum signature are generated and
-attached separately, is simple to implement, requires minimal changes to existing signing, and aligns well with
-current secure boot and update architectures.
+To enable secure migration from traditional to post-quantum security, PQ/T hybrid digital signature methods can be used for firmware authentication, combining a traditional and a post-quantum algorithm using either non-composite or composite constructions as defined in {{?RFC9794}}. 
 
-Other hybrid techniques, such as cross-linked signatures (where signatures cover each other's values), composite signatures (which combine multiple signatures into a single structured signature), or counter-signatures (where one signature signs over another) introduce more complexity and are not yet typical in resource-constrained firmware workflows.
+A non-composite approach, where both signatures are generated and carried separately, is simple to implement, requires minimal changes to existing signing, and aligns well with current secure boot and update architectures.
+
+Composite constructions, which combine multiple algorithms into a single signature, require changes to cryptographic processing. In such constructions, the additional cost of including a traditional algorithm is typically small compared to the post-quantum component, but overall resource usage remains dominated by the post-quantum algorithm, particularly in terms of key size, signature size, code size, and verification cost.
+
+Implementations should ensure that verification enforces the intended hybrid authentication property, i.e., that authentication remains valid as long as at least one component algorithm remains secure.
 
 # Security Considerations
 
@@ -678,4 +679,4 @@ Side-channel attacks exploit physical leaks during cryptographic operations, suc
 
 # Acknowledgments
 
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Hannes Tschofenig and Aritra Banerjee for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Keegan Dasilva Barbosa, Hannes Tschofenig and Aritra Banerjee for the detailed review.
