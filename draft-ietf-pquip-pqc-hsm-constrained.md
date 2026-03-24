@@ -510,7 +510,7 @@ capability and may require additional consideration.
 
 As discussed in {{Seed}}, in many deployment scenarios, constrained devices primarily perform signature verification, while signature generation is performed on more capable systems (e.g., firmware signing infrastructure). Therefore, the impact of rejection sampling is primarily relevant for devices that perform ML-DSA signing.
 
-Devices that only generate ML-DSA keys or verify signatures are not affected, as those operations do not involve rejection sampling and have deterministic execution times.
+Devices that only verify signatures are not affected, as those operations do not involve rejection sampling and have deterministic execution times.
 
 In firmware update and secure boot scenarios, signature verification is typically performed during early boot stages, where the bootloader has exclusive access to system resources. In such environments, the practical impact of resource constraints on signature verification is reduced compared to general runtime environments.
 
