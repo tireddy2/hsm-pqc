@@ -22,13 +22,13 @@ keyword:
 venue:
   group: "pquip"
   type: "Working Group"
-  mail: "<pqc@ietf.org>"
-  arch: "<https://mailarchive.ietf.org/arch/browse/pqc/>"
+  mail: "pqc@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/pqc/"
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, strict, comments, docmapping]
 
-author
+author:
  -
 
     fullname: Tirumaleswar Reddy
@@ -38,12 +38,12 @@ author
     country: India
     email: "k.tirumaleswar_reddy@nokia.com"
 
--
+ -
     fullname: Dan Wing
     organization: Citrix
     abbrev: Citrix
     country: United States of America
-    email: <danwing@gmail.com>
+    email: "danwing@gmail.com"
  -
 
     fullname: Ben Salter
@@ -52,7 +52,7 @@ author
  -
     fullname: Kris Kwiatkowski
     organization: PQShield
-    email: <kris@amongbytes.com>
+    email: kris@amongbytes.com
 
 normative:
 
@@ -64,25 +64,25 @@ informative:
   SP800-208: DOI.10.6028/NIST.SP.800-208
   ISO19790:
     title: "Information security, cybersecurity, and privacy protection — Security requirements for cryptographic modules"
-    target: <https://www.iso.org/standard/82423.html>
+    target: https://www.iso.org/standard/82423.html
     author:
       - org: ISO
     date: February 2025
   BIND:
     title: "Unbindable Kemmy Schmidt: ML-KEM is neither MAL-BIND-K-CT nor MAL-BIND-K-PK"
-    target: <https://eprint.iacr.org/2024/523.pdf>
+    target: https://eprint.iacr.org/2024/523.pdf
     author:
       - ins: S. Schmieg
     date: April 2024
   HQC:
      title: "Hamming Quasi-Cyclic (HQC)"
-     target: <https://pqc-hqc.org/doc/hqc_specifications_2025_08_22.pdf>
+     target: https://pqc-hqc.org/doc/hqc_specifications_2025_08_22.pdf
      author:
        - ins: Gaborit et al.
      date: August 2025
   Falcon:
      title: "Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU"
-     target: <https://falcon-sign.info/falcon.pdf>
+     target: https://falcon-sign.info/falcon.pdf
      author:
      - ins: P-A. Fouque
      - ins: J. Hoffstein
@@ -97,7 +97,7 @@ informative:
      date: October 2020
   Stream-SPHINCS:
      title: "Streaming SPHINCS+ for Embedded Devices using the Example of TPMs"
-     target: "<https://eprint.iacr.org/2021/1072.pdf>"
+     target: https://eprint.iacr.org/2021/1072.pdf
      author:
      - ins: R. Niederhagen
      - ins: J. Roth
@@ -105,7 +105,7 @@ informative:
      date: August 2021
   BosRS22:
      title: "Dilithium for Memory Constrained Devices"
-     target: "<https://eprint.iacr.org/2022/323.pdf>"
+     target: https://eprint.iacr.org/2022/323.pdf
      author:
        - ins: J. Bos
        - ins: J. Renes
@@ -115,7 +115,7 @@ informative:
   Lyu09: DOI.10.1007/978-3-642-10366-7_35
   Li32:
      title: "CRYSTALS-Dilithium: Algorithm Specifications and Supporting Documentation (Version 3.1)"
-     target: "<https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf>"
+     target: https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
      author:
      - ins: S. Bai
      - ins: L. Ducas
@@ -128,13 +128,13 @@ informative:
      date: February 2021
   NISTSecurityLevels:
     title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
-    target: "<https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)>"
+    target: https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
     author:
     - org: NIST
     date: January 2017
   Bot19:
      title: "Memory-Efficient High-Speed Implementation of Kyber on Cortex-M4"
-     target: "<https://eprint.iacr.org/2019/489.pdf>"
+     target: https://eprint.iacr.org/2019/489.pdf
      author:
        - ins: L. Botros
        - ins: M. J. Kannwischer
@@ -143,7 +143,7 @@ informative:
   Gre20: DOI.10.46586/tches.v2021.i1.1-24
   Smaller-SPHINCS:
     title: "Smaller Sphincs+ or, Honey, I Shrunk the Signatures"
-    target: "<https://eprint.iacr.org/2024/018.pdf>"
+    target: https://eprint.iacr.org/2024/018.pdf
     author:
       - ins: S. Fluhrer
       - ins: Q. Dang
@@ -291,7 +291,7 @@ There are two distinct approaches to exporting private keys or seeds from a cons
 
 #### Direct Transfer Over TLS
 
-In scenarios where the constrained device has sufficient capability to initiate or terminate a mutually-authenticated TLS session, the device can securely transfer encrypted private key material directly to another cryptographic module.
+In scenarios where the constrained device supports mutually authenticated TLS with a peer, the device can securely transfer encrypted private key material directly to another cryptographic module over a mutually authenticated TLS connection.
 
 #### Export of Encrypted Seeds and Private Keys
 
@@ -328,12 +328,13 @@ Constrained devices implementing PQC ephemeral key management will have to:
 
 # Optimizing Memory Footprint in Post-Quantum Signature Schemes
 
-A key consideration when deploying post-quantum cryptography in cryptographic modules is the amount of memory available. For instance, ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant memory during signing due to multiple Number Theoretic Transform (NTT)
-operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive.
+A key consideration when deploying post-quantum cryptography in cryptographic modules is the amount and type of memory available. In constrained devices, it is important to distinguish between volatile memory (RAM), used for intermediate computations during cryptographic operations, and non-volatile storage (e.g., flash), used for storing keys, firmware, and configuration data. For instance, ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant RAM during signing due to multiple Number Theoretic Transform (NTT) operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive.
 
-Some constrained systems, i.e. those battery-operated, may have very limited RAM available for cryptographic operations. In such cases, straightforward implementations of PQ schemes may exceed the available memory, making it infeasible to use without optimizations.
+Some constrained systems, particularly battery-operated devices, may have limited RAM available for cryptographic operations, even if sufficient non-volatile storage is available. In such cases, straightforward implementations of PQ schemes may exceed available RAM, making them infeasible without optimization.
 
 Several post-quantum schemes can be optimized to reduce the memory footprint of the algorithm. For instance, SLH-DSA has two flavours: the "f" variants which are parameterized to run as fast as possible, and the "s" variants which produce shorter signatures. Developers wishing to use SLH-DSA may wish to utilize the "s" variants on devices with insufficient RAM to use the "f" variants. Further optimizations may be possible by running the signature algorithm in a "streaming manner" such that constrained device does not need to hold the entire signature in memory at once, as discussed in {{Stream-SPHINCS}}.
+
+Implementations may trade off resource usage across CPU, RAM, and non-volatile storage. For example, techniques such as lazy expansion reduce RAM usage at the cost of increased computation, while storing expanded key in non-volatile storage can reduce runtime overhead. Designers should balance these trade-offs based on the target platform.
 
 Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimization techniques that can be applied to make ML-DSA more feasible in constrained cryptographic modules are discussed in {{lazy-expansion}} and {{pre-hashing}}.
 
@@ -507,9 +508,11 @@ may require significantly more iterations than average. This unfavorable tail be
 a practical concern for ML-DSA deployments on constrained devices with limited execution
 capability and may require additional consideration.
 
-This consideration primarily applies to devices that perform ML-DSA signing. Devices that only
-generate ML-DSA keys or verify signatures are not affected, as those operations do not involve
-rejection sampling and have deterministic execution times.
+As discussed in {{Seed}}, in many deployment scenarios, constrained devices primarily perform signature verification, while signature generation is performed on more capable systems (e.g., firmware signing infrastructure). Therefore, the impact of rejection sampling is primarily relevant for devices that perform ML-DSA signing.
+
+Devices that only verify signatures are not affected, as those operations do not involve rejection sampling and have deterministic execution times.
+
+In firmware update and secure boot scenarios, signature verification is typically performed during early boot stages, where the bootloader has exclusive access to system resources. In such environments, the practical impact of resource constraints on signature verification is reduced compared to general runtime environments.
 
 ### Suggestions for benchmarking ML-DSA Signing Performance
 
@@ -628,7 +631,7 @@ and distribute malicious updates.
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software devices.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software devices. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
 
 Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{?RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
@@ -675,7 +678,4 @@ Side-channel attacks exploit physical leaks during cryptographic operations, suc
 
 # Acknowledgments
 
-{:numbered="false"}
-
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, and Aritra Banerjee for
-the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Hannes Tschofenig and Aritra Banerjee for the detailed review.
