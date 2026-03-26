@@ -661,7 +661,7 @@ A non-composite approach, where both signatures are generated and carried separa
 
 Composite constructions, which combine multiple algorithms into a single signature, require changes to cryptographic processing. In such constructions, the additional cost of including a traditional algorithm is typically small compared to the post-quantum component, but overall resource usage remains dominated by the post-quantum algorithm, particularly in terms of key size, signature size, code size, and verification cost.
 
-Implementations should ensure that verification enforces the intended hybrid authentication property, i.e., that authentication remains valid as long as at least one component algorithm remains secure.
+Implementations should ensure that verification enforces the intended hybrid authentication property, namely that authentication remains secure as long as at least one component algorithm remains secure.
 
 # Security Considerations
 
