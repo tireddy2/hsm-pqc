@@ -57,7 +57,6 @@ author:
 normative:
 
 informative:
-  IEEE-802.1AR: DOI.10.1109/IEEESTD.2018.8423794
   FIPS203: DOI.10.6028/NIST.FIPS.203
   FIPS204: DOI.10.6028/NIST.FIPS.204
   FIPS205: DOI.10.6028/NIST.FIPS.205
@@ -201,6 +200,10 @@ Additional post-quantum algorithms are expected to be standardised in future, wh
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
 Actual protocol behaviour is defined in other documents.
 
+# Conventions and Definitions
+
+{::boilerplate bcp14-tagged}
+
 # Key Management in Constrained Devices for PQC
 
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
@@ -340,7 +343,7 @@ Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimiz
 
 ## Memory requirements of Lattice-Based Schemes
 
-The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A⋅s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversely, the sizes of those matrices depend on the security level.
+The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A*s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversely, the sizes of those matrices depend on the security level.
 
 To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 *5* 256 *2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5* 256 *2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3* 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
@@ -350,11 +353,11 @@ It is worth noting that different cryptographic operations may have different me
 
 The lazy expansion technique is an optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
 
-As an example, we can look at the computation of matrix-vector multiplication t=A⋅s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
+As an example, we can look at the computation of matrix-vector multiplication t=A*s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
 
-The lazy expansion would first generate first element of a vector s1 (s1[0]) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (s1[1]) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 *2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5* 256 *2 = 2560 bytes) + one element of t (5* 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
+The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 *2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5* 256 *2 = 2560 bytes) + one element of t (5* 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
-With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y (FIPS-204, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
+With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y ({{FIPS204}}, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
 This memory optimization was initially described in {{Bot19}}. Other optimizations can be found in {{Gre20}} and {{BosRS22}}.
 
@@ -415,7 +418,7 @@ nature of the signing process. While this results in a variable number of iterat
 algorithm, the expected number of retries for the standardized ML-DSA parameter sets is quantified
 below.
 
-The analysis in this section follows the algorithmic structure and assumptions defined in FIPS-204.
+The analysis in this section follows the algorithmic structure and assumptions defined in {{FIPS204}}.
 Accordingly, the numerical results are analytically derived and characterize the expected behavior
 of ML-DSA.
 
@@ -554,7 +557,7 @@ or external device management infrastructure.
 
 Although the underlying cryptographic module may offer primitives to securely generate new
 key pairs, store fresh seeds, or delete obsolete keys, these capabilities must be
-integrated into the device’s broader key management framework. This process is especially
+integrated into the device's broader key management framework. This process is especially
 important in the context of PQC, where evolving research may lead to changes in
 recommended algorithms, parameters, and key management practices.
 
