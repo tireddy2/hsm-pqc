@@ -62,7 +62,7 @@ informative:
   FIPS205: DOI.10.6028/NIST.FIPS.205
   SP800-208: DOI.10.6028/NIST.SP.800-208
   ISO19790:
-    title: "Information security, cybersecurity, and privacy protection — Security requirements for cryptographic modules"
+    title: "Information security, cybersecurity, and privacy protection - Security requirements for cryptographic modules"
     target: https://www.iso.org/standard/82423.html
     author:
       - org: ISO
@@ -422,7 +422,7 @@ The analysis in this section follows the algorithmic structure and assumptions d
 Accordingly, the numerical results are analytically derived and characterize the expected behavior
 of ML-DSA.
 
-The ML-DSA signature scheme uses the Fiat–Shamir with Aborts construction {{Lyu09}}. As a
+The ML-DSA signature scheme uses the Fiat-Shamir with Aborts construction {{Lyu09}}. As a
 result, the signature generation algorithm is built around a rejection-sampling loop. This
 section examines the rejection-sampling behavior of ML-DSA, as rejection sampling is not
 commonly used as a core mechanism in traditional digital signature schemes.
@@ -658,13 +658,17 @@ Cryptographers are more confident still in the security of hash-based signatures
 
 ## Hybrid Signature Approaches
 
-To enable secure migration from traditional to post-quantum security, PQ/T hybrid digital signature methods can be used for firmware authentication, combining a traditional and a post-quantum algorithm using either non-composite or composite constructions as defined in {{?RFC9794}}. 
+To enable secure migration from traditional to post-quantum security, PQ/T hybrid digital signature methods can be used for firmware authentication, combining a traditional and a post-quantum algorithm using either non-composite or composite constructions as defined in {{?RFC9794}}.
 
 A non-composite approach, where both signatures are generated and carried separately, is simple to implement, requires minimal changes to existing signing, and aligns well with current secure boot and update architectures.
 
 Composite constructions, which combine multiple algorithms into a single signature, require changes to cryptographic processing. In such constructions, the additional cost of including a traditional algorithm is typically small compared to the post-quantum component, but overall resource usage remains dominated by the post-quantum algorithm, particularly in terms of key size, signature size, code size, and verification cost.
 
 Implementations should ensure that verification enforces the intended hybrid authentication property, namely that authentication remains secure as long as at least one component algorithm remains secure.
+
+# IANA Considerations
+
+This document requires no IANA actions.
 
 # Security Considerations
 
