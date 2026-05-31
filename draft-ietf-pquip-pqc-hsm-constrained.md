@@ -489,7 +489,7 @@ The number of rejections during signature generation depends on four factors:
 As a result, some message-key combinations may lead to a higher number of rejection iterations
 than others.
 
-Using Equation (5) from {{Li32}} and assuming an random bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1),
+Using Equation (5) from {{Li32}} and assuming a random bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1),
 the rejection probability during ML-DSA signing can be computed. These probabilities depend on
 the ML-DSA parameter set and are summarized below.
 
