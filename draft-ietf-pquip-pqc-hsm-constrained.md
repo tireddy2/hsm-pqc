@@ -451,7 +451,7 @@ during the signing procedure. This differs from traditional algorithms like RSA 
 which allow for more efficient processing of the message, without requiring multiple
 passes or intermediate processing of the digest.
 
-## Impact of rejection sampling in ML-DSA Signing on performance
+## Impact of rejection sampling in ML-DSA Signing on performance {#mldsa-rej-sampling}
 
 In constrained and battery-powered IoT devices that perform ML-DSA signing, the rejection-sampling
 loop introduces variability in signing latency and energy consumption due to the probabilistic
@@ -477,7 +477,7 @@ The purpose of rejection sampling is twofold: First, it prevents leakage of info
 secret key through out-of-range values that could otherwise bias the distribution of signatures.
 Second, it ensures that the distribution of valid signatures is statistically close to the ideal
 distribution assumed in the security reduction, namely the zero-knowledge property underlying the
-reduction to SelfTargetMSIS problem (see Section 6.2.1 of <<Li32>>).
+reduction to SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
 
 The number of rejections during signature generation depends on four factors:
 
@@ -502,10 +502,13 @@ the ML-DSA parameter set and are summarized below.
 
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
 succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
-the expected number of iterations until a successful signature is generated is the reciprocal
-of the acceptance probability. Hence, if r denotes the per-iteration rejection probability and
-p = 1 - r the acceptance probability, then the expected number of signing iterations is 1/p.
-Using this model, the expected number of signing attempts for each ML-DSA variant is shown below.
+the number of attempts until success follows approximately a geometric distribution, under the
+heuristic assumptions of {{Li32}} Equation 5, and the Table {{MLDSA_Sign_CDF}} reflects the
+CDF of this distribution. The expected number of signing iterations until a successful signature
+is generated is the reciprocal of the acceptance probability. Hence, if r denotes the per-iteration
+rejection probability and p = 1 - r the acceptance probability, then the expected number of signing
+iterations is 1/p. Using this model, the expected number of signing attempts for each ML-DSA variant
+is shown below.
 
 | ML-DSA Variant | Expected Number of Attempts |
 |----------------|-----------------------------|
@@ -569,25 +572,32 @@ important to account for the probabilistic nature of the rejection-sampling loop
 only a single timing measurement or a best-case execution time may lead to misleading conclusions
 about practical performance.
 
-To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks should
-report the following two metrics:
+Libraries implementing ML-DSA SHOULD provide a mechanism to report the number of
+rejection-sampling iterations used during the most recent signing operation. This enables
+benchmarking tools to accurately compute average signing times across multiple signing operations.
+
+To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks MAY report
+all or some of the following metrics:
 
 1. Single-iteration signing time:
 The signing time for a signature operation that completes within a single iteration of the
-rejection-sampling loop. This metric reflects the best-case performance of the signing algorithm
-and provides insight into the efficiency of the core signing operation without the overhead
-of repeated iterations.
+rejection-sampling loop. This metric includes the fixed setup cost incurred once per signing
+call (such as matrix expansion, message digest computation, and similar precomputations), plus
+the cost of one loop operation. It reflects the best-case performance of the signing algorithm
+and provides insight into the efficiency of the core signing operation.
 
 2. Average signing time:
-The average signing time measured over a sufficiently large number of signing operations,
-using independent messages and, where applicable, independent randomness. Alternatively, an
-implementation MAY report the signing time corresponding to the expected number of iterations
-(see {{Expected_Attempts}}). This approach requires identifying a message, key, and randomness
-combination that results in the expected iteration count.
+Since the iteration count follows a geometric distribution (as described in {{mldsa-rej-sampling}}),
+the expected signing time can be computed analytically as the fixed setup cost plus the per-iteration
+cost multiplied by the expected number of iterations from Table {{Expected_Attempts}}.
+Implementations MAY instead measure average signing time empirically over a sufficiently large number of
+signing operations, using independent messages and, where applicable, independent randomness, to validate
+against the analytical model on the target hardware. This approach requires identifying a message, key,
+and randomness combination that results in the expected iteration count.
 
-Libraries implementing ML-DSA should provide a mechanism to report the number of
-rejection-sampling iterations used during the most recent signing operation. This enables
-benchmarking tools to accurately compute average signing times across multiple signing operations.
+Rather than relying on ad hoc random inputs, benchmarks MAY use a standardized input data set covering best-case,
+average, and worst-case vectors with documented occurrence probabilities, to ensure reproducibility and
+comparability across implementations.
 
 # Additional Considerations for PQC Use in Constrained Devices
 
