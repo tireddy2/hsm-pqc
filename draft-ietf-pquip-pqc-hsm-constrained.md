@@ -576,7 +576,7 @@ Libraries implementing ML-DSA SHOULD provide a mechanism to report the number of
 rejection-sampling iterations used during the most recent signing operation. This enables
 benchmarking tools to accurately compute average signing times across multiple signing operations.
 
-To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks MAY report
+To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks may report
 all or some of the following metrics:
 
 1. Single-iteration signing time:
