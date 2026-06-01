@@ -590,7 +590,7 @@ and provides insight into the efficiency of the core signing operation.
 Since the iteration count follows a geometric distribution (as described in {{mldsa-rej-sampling}}),
 the expected signing time can be computed analytically as the fixed setup cost plus the per-iteration
 cost multiplied by the expected number of iterations from Table {{Expected_Attempts}}.
-Implementations MAY instead measure average signing time empirically over a sufficiently large number of
+Implementations may instead measure average signing time empirically over a sufficiently large number of
 signing operations, using independent messages and, where applicable, independent randomness, to validate
 against the analytical model on the target hardware. This approach requires identifying a message, key,
 and randomness combination that results in the expected iteration count.
