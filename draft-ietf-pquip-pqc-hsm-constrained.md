@@ -595,7 +595,7 @@ signing operations, using independent messages and, where applicable, independen
 against the analytical model on the target hardware. This approach requires identifying a message, key,
 and randomness combination that results in the expected iteration count.
 
-Rather than relying on ad hoc random inputs, benchmarks MAY use a standardized input data set covering best-case,
+Rather than relying on ad hoc random inputs, benchmarks may use a standardized input data set covering best-case,
 average, and worst-case vectors with documented occurrence probabilities, to ensure reproducibility and
 comparability across implementations.
 
