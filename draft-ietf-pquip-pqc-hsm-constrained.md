@@ -572,7 +572,7 @@ important to account for the probabilistic nature of the rejection-sampling loop
 only a single timing measurement or a best-case execution time may lead to misleading conclusions
 about practical performance.
 
-Libraries implementing ML-DSA SHOULD provide a mechanism to report the number of
+Libraries implementing ML-DSA should provide a mechanism to report the number of
 rejection-sampling iterations used during the most recent signing operation. This enables
 benchmarking tools to accurately compute average signing times across multiple signing operations.
 
