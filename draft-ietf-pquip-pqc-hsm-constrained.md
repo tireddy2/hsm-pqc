@@ -28,9 +28,8 @@ venue:
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, strict, comments, docmapping]
 
-author
+author:
  -
-
     fullname: Tirumaleswar Reddy
     organization: Nokia
     city: Bangalore
@@ -38,14 +37,14 @@ author
     country: India
     email: "k.tirumaleswar_reddy@nokia.com"
 
--
+ -
     fullname: Dan Wing
     organization: Citrix
     abbrev: Citrix
     country: United States of America
     email: "danwing@gmail.com"
+ 
  -
-
     fullname: Ben Salter
     organization: UK National Cyber Security Centre
     email: ben.s3@ncsc.gov.uk
