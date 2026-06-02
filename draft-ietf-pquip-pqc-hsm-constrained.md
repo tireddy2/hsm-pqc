@@ -28,7 +28,7 @@ venue:
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, strict, comments, docmapping]
 
-author:
+author
  -
 
     fullname: Tirumaleswar Reddy
@@ -38,7 +38,7 @@ author:
     country: India
     email: "k.tirumaleswar_reddy@nokia.com"
 
- -
+-
     fullname: Dan Wing
     organization: Citrix
     abbrev: Citrix
@@ -52,7 +52,7 @@ author:
  -
     fullname: Kris Kwiatkowski
     organization: PQShield
-    email: kris@amongbytes.com
+    email: "kris@amongbytes.com"
 
 normative:
 
@@ -100,7 +100,7 @@ informative:
      author:
      - ins: R. Niederhagen
      - ins: J. Roth
-     - ins: J. Wälde
+     - ins: J. Walde
      date: August 2021
   BosRS22:
      title: "Dilithium for Memory Constrained Devices"
@@ -123,7 +123,7 @@ informative:
      - ins: V. Lyubashevsky
      - ins: P. Schwabe
      - ins: G. Seiler
-     - ins: D. Stehlé
+     - ins: D. Stehle
      date: February 2021
   NISTSecurityLevels:
     title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
@@ -164,8 +164,10 @@ implications of PQC on firmware update mechanisms in such constrained systems.
 # Introduction
 
 The transition to post-quantum cryptography (PQC) poses significant challenges for
-resource-constrained devices, such as Internet of Things (IoT) devices, which are often equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of hardware
-security modules (HSMs).
+resource-constrained devices, such as Internet of Things (IoT) devices, which are often
+equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of
+hardware resecurity modules (HSMs).
+
 These devices typically operate under strict limitations on
 processing power, RAM, and flash memory, and in some cases are battery-powered. Adopting
 PQC algorithms in such environments is difficult due to their substantially larger key
@@ -174,7 +176,7 @@ PQC requires careful planning to ensure secure and efficient key management with
 constrained platforms.
 
 Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
-As a result, designers may need to consider PQ solutions to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
+As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
 This document provides guidance and best practices for integrating PQC algorithms into
 constrained devices. It reviews strategies for key storage, ephemeral key management,
@@ -218,7 +220,7 @@ stored as seeds instead of expanded key material.
 
 ## Seed Management {#Seed}
 
-To comply with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}} guidelines:
+The following is some additional guidance to aide in compliance with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}}:
 
 ### Seed Storage
 
@@ -353,7 +355,7 @@ It is worth noting that different cryptographic operations may have different me
 
 The lazy expansion technique is an optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
 
-As an example, we can look at the computation of matrix-vector multiplication t=A*s1. The matrix A is generated from a seed using a PRF, meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
+As an example, we can look at the computation of matrix-vector multiplication t=A*s1. The matrix A is generated from a seed using a pseudo-random function (PRF), meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
 
 The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 *2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5* 256 *2 = 2560 bytes) + one element of t (5* 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
@@ -386,6 +388,46 @@ External&mu;-ML-DSA.Verify for verification -- or vice versa. In both cases, the
 does not need to know whether the signer used internal or external pre-hashing, as the resulting
 signature and verification process remain the same.
 
+# Cryptographic Artifact Sizes for Post-Quantum Algorithms {#sec-key-sizes}
+
+The sizes of keys, ciphertexts, and signatures of post-quantum algorithms are generally larger than those of traditional
+cryptographic algorithms. This increase in size is a significant consideration for
+constrained devices, which often have limited memory and storage capacity. For example,
+the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
+increased memory usage and slower performance in constrained environments.
+
+The following table lists the sizes of cryptographic artifacts for representative instantiations of SLH-DSA and ML-KEM at NIST Security Level 1, as defined in {{NISTSecurityLevels}}, ML-DSA at NIST Security Level 2, and HSS/LMS and XMSS at NIST Security Level 3; these are the lowest defined security levels for the respective schemes.
+
+| Algorithm             | Type             | Size (bytes) |
+|-----------------------|------------------|--------------|
+| ML-DSA-44             | Public Key       | 1312         |
+|                       | Private Key      | 2560         |
+|                       | Signature        | 2420         |
+| SLH-DSA-SHA2-128s     | Public Key       | 32           |
+|                       | Private Key      | 64           |
+|                       | Signature        | 7856         |
+| SLH-DSA-SHA2-128f     | Public Key       | 32           |
+|                       | Private Key      | 64           |
+|                       | Signature        | 17088        |
+| LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
+|                       | Private Key      | 44           |
+|                       | Signature        | 2004         |
+| XMSS-SHA2_10_192      | Public Key       | 48           |
+|                       | Private Key      | 104          |
+|                       | Signature        | 1492         |
+| ML-KEM-512            | Public Key       | 800          |
+|                       | Private Key      | 1632         |
+|                       | Ciphertext       | 768          |
+|                       | Shared Secret    | 32           |
+| X25519                | Public Key       | 32           |
+|                       | Private Key      | 32           |
+|                       | Shared Secret    | 32           |
+| Ed25519               | Public Key       | 32           |
+|                       | Private Key      | 32           |
+|                       | Signature        | 64           |
+
+Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
+
 # Optimizing Performance in PQC Signature Schemes
 
 When implementing PQC signature algorithms in constrained cryptographic modules,
@@ -399,7 +441,6 @@ for signing. By signing the digest of the content rather than the entire content
 communication between the application and the cryptographic module is minimized, enabling
 better performance. This method is applicable for any PQC signature algorithm, whether it
 is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
-
 often provided to pre-hash or process the message in a way that avoids sending the entire
 raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
 
@@ -410,7 +451,7 @@ during the signing procedure. This differs from traditional algorithms like RSA 
 which allow for more efficient processing of the message, without requiring multiple
 passes or intermediate processing of the digest.
 
-## Impact of rejection sampling in ML-DSA Signing on performance
+## Impact of rejection sampling in ML-DSA Signing on performance {#mldsa-rej-sampling}
 
 In constrained and battery-powered IoT devices that perform ML-DSA signing, the rejection-sampling
 loop introduces variability in signing latency and energy consumption due to the probabilistic
@@ -432,10 +473,11 @@ distributions required by the security proof. In particular, after computing can
 components, the signer checks whether certain norm bounds are satisfied. If any of these bounds
 are violated, the entire signing attempt is discarded and restarted with fresh randomness.
 
-The purpose of rejection sampling is twofold. First, it prevents leakage of information about the
+The purpose of rejection sampling is twofold: First, it prevents leakage of information about the
 secret key through out-of-range values that could otherwise bias the distribution of signatures.
 Second, it ensures that the distribution of valid signatures is statistically close to the ideal
-distribution assumed in the security reduction.
+distribution assumed in the security reduction, namely the zero-knowledge property underlying the
+reduction to SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
 
 The number of rejections during signature generation depends on four factors:
 
@@ -447,7 +489,7 @@ The number of rejections during signature generation depends on four factors:
 As a result, some message-key combinations may lead to a higher number of rejection iterations
 than others.
 
-Using Equation (5) from {{Li32}} and assuming an RBG as specified in {{FIPS204}} (Section 3.6.1),
+Using Equation (5) from {{Li32}} and assuming a random bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1),
 the rejection probability during ML-DSA signing can be computed. These probabilities depend on
 the ML-DSA parameter set and are summarized below.
 
@@ -456,21 +498,24 @@ the ML-DSA parameter set and are summarized below.
 | ML-DSA-44      | 0.2350                 |
 | ML-DSA-65      | 0.1963                 |
 | ML-DSA-87      | 0.2596                 |
-{: #AcceptanceProbabilities title="Acceptance probability - per-attempt probability of successful signing for the given ML-DSA variant."}
+{: #Acceptance_Probabilities title="Acceptance probability - per-attempt probability of successful signing for the given ML-DSA variant."}
 
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
 succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
-the expected number of iterations until a successful signature is generated is the reciprocal
-of the acceptance probability. Hence, if r denotes the per-iteration rejection probability and
-p = 1 - r the acceptance probability, then the expected number of signing iterations is 1/p.
-Using this model, the expected number of signing attempts for each ML-DSA variant is shown below.
+the number of attempts until success follows approximately a geometric distribution, under the
+heuristic assumptions of {{Li32}} Equation 5, and the Table {{MLDSA_Sign_CDF}} reflects the
+CDF of this distribution. The expected number of signing iterations until a successful signature
+is generated is the reciprocal of the acceptance probability. Hence, if r denotes the per-iteration
+rejection probability and p = 1 - r the acceptance probability, then the expected number of signing
+iterations is 1/p. Using this model, the expected number of signing attempts for each ML-DSA variant
+is shown below.
 
 | ML-DSA Variant | Expected Number of Attempts |
 |----------------|-----------------------------|
 | ML-DSA-44      | 4.255                       |
 | ML-DSA-65      | 5.094                       |
 | ML-DSA-87      | 3.852                       |
-{: #ExpectedAttempts title="Expected Number of Attempts for the given ML-DSA variant."}
+{: #Expected_Attempts title="Expected Number of Attempts for the given ML-DSA variant."}
 
 This model also allows computing the probability that the rejection-sampling loop completes
 within a given number of iterations. Specifically, the minimum number of iterations n required
@@ -498,9 +543,12 @@ at most a given number of iterations.
 | 11         | 0.9475              | 0.9096              | 0.9634              |
 {: #MLDSA_Sign_CDF title="CDF values denote the probability of completing the signing process within the given number of iterations, for each ML-DSA variant."}
 
-The table {{MLDSA_Sign_CDF}} shows that while acceptance rate is relatively high for ML-DSA, the
-probability quickly grows with increasing number of iterations. After 11 iterations,
-each ML-DSA variant achieves over 90% probability of completing the signing process.
+Table {{MLDSA_Sign_CDF}} shows the cumulative probability of completing the signing process within
+a given number of iterations. These values follow directly from the geometric distribution of
+iteration counts, with per-attempt acceptance probabilities of approximately 20% to 26% (as shown in
+table {{Acceptance_Probabilities}}) and expected iteration counts of roughly 4 to 5 (as shown in
+table {{Expected_Attempts}}). After 11 iterations, each ML-DSA variant achieves over 90% probability
+of completing the signing process.
 
 ### Practical Implications for Constrained Cryptographic Modules
 
@@ -524,25 +572,32 @@ important to account for the probabilistic nature of the rejection-sampling loop
 only a single timing measurement or a best-case execution time may lead to misleading conclusions
 about practical performance.
 
-To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks should
-report the following two metrics:
-
-1. Single-iteration signing time:
-The signing time for a signature operation that completes within a single iteration of the
-rejection-sampling loop. This metric reflects the best-case performance of the signing algorithm
-and provides insight into the efficiency of the core signing operation without the overhead
-of repeated iterations.
-
-2. Average signing time:
-The average signing time measured over a sufficiently large number of signing operations,
-using independent messages and, where applicable, independent randomness. Alternatively, an
-implementation MAY report the signing time corresponding to the expected number of iterations
-(see {{ExpectedAttempts}}). This approach requires identifying a message, key, and randomness
-combination that results in the expected iteration count.
-
 Libraries implementing ML-DSA should provide a mechanism to report the number of
 rejection-sampling iterations used during the most recent signing operation. This enables
 benchmarking tools to accurately compute average signing times across multiple signing operations.
+
+To provide a more comprehensive assessment of ML-DSA signing performance, benchmarks may report
+all or some of the following metrics:
+
+1. Single-iteration signing time:
+The signing time for a signature operation that completes within a single iteration of the
+rejection-sampling loop. This metric includes the fixed setup cost incurred once per signing
+call (such as matrix expansion, message digest computation, and similar precomputations), plus
+the cost of one loop operation. It reflects the best-case performance of the signing algorithm
+and provides insight into the efficiency of the core signing operation.
+
+2. Average signing time:
+Since the iteration count follows a geometric distribution (as described in {{mldsa-rej-sampling}}),
+the expected signing time can be computed analytically as the fixed setup cost plus the per-iteration
+cost multiplied by the expected number of iterations from Table {{Expected_Attempts}}.
+Implementations may instead measure average signing time empirically over a sufficiently large number of
+signing operations, using independent messages and, where applicable, independent randomness, to validate
+against the analytical model on the target hardware. This approach requires identifying a message, key,
+and randomness combination that results in the expected iteration count.
+
+Rather than relying on ad hoc random inputs, benchmarks may use a standardized input data set covering best-case,
+average, and worst-case vectors with documented occurrence probabilities, to ensure reproducibility and
+comparability across implementations.
 
 # Additional Considerations for PQC Use in Constrained Devices
 
@@ -572,57 +627,16 @@ management policies. This includes the ability to:
 
 - Reconfigure cryptographic profile of the device via firmware updates.
 
-## Cryptographic Artifact Sizes for Post-Quantum Algorithms {#sec-key-sizes}
-
-The sizes of keys, ciphertexts, and signatures of post-quantum algorithms are generally larger than those of traditional
-cryptographic algorithms. This increase in size is a significant consideration for
-constrained devices, which often have limited memory and storage capacity. For example,
-the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
-increased memory usage and slower performance in constrained environments.
-
-The following table lists the sizes of cryptographic artifacts for representative instantiations of SLH-DSA and ML-KEM at NIST Security Level 1, as defined in {{NISTSecurityLevels}}, ML-DSA at NIST Security Level 2, and HSS/LMS and XMSS at NIST Security Level 3; these are the lowest defined security levels for the respective schemes.
-
-| Algorithm             | Type             | Size (bytes) |
-|-----------------------|------------------|--------------|
-| ML-DSA-44             | Public Key       | 1312         |
-|                       | Private Key      | 2560         |
-|                       | Signature        | 2420         |
-| SLH-DSA-SHA2-128s     | Public Key       | 32           |
-
-|                       | Private Key      | 64           |
-|                       | Signature        | 7856         |
-| SLH-DSA-SHA2-128f     | Public Key       | 32           |
-
-|                       | Private Key      | 64           |
-|                       | Signature        | 17088        |
-| LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
-|                       | Private Key      | 44           |
-|                       | Signature        | 2004         |
-| XMSS-SHA2_10_192      | Public Key       | 48           |
-|                       | Private Key      | 104          |
-|                       | Signature        | 1492         |
-| ML-KEM-512            | Public Key       | 800          |
-|                       | Private Key      | 1632         |
-|                       | Ciphertext       | 768          |
-|                       | Shared Secret    | 32           |
-| X25519                | Public Key       | 32           |
-|                       | Private Key      | 32           |
-|                       | Shared Secret    | 32           |
-| Ed25519               | Public Key       | 32           |
-|                       | Private Key      | 32           |
-|                       | Signature        | 64           |
-
-Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
-
 # Post-quantum Firmware Upgrades for Constrained Devices
 
 Constrained devices deployed in the field require periodic firmware upgrades to patch
 security vulnerabilities, introduce new cryptographic algorithms, and improve overall
-functionality. However, the firmware upgrade process itself can become a critical attack
-vector if not designed to be post-quantum. If an adversary compromises the update
-mechanism, they could introduce malicious firmware, undermining all other security
-properties of the cryptographic modules. Therefore, ensuring a post-quantum firmware
-upgrade process is critical for the security of deployed constrained devices.
+functionality. However, if not designed to withstand attacks from a Cryptographically
+Relevant Quantum Computer (CRQC), the firmware update process itself can become a critical
+attack vector. If an adversary compromises the update mechanism, they could introduce malicious
+firmware, undermining all other security properties of the cryptographic modules. Therefore,
+ensuring a post-quantum firmware upgrade process is critical for the security of deployed constrained
+devices.
 
 CRQCs pose an additional risk by breaking traditional digital signatures (e.g., RSA,
 ECDSA) used to authenticate firmware updates. If firmware verification relies on
@@ -638,7 +652,7 @@ These algorithms must provide long-term security, operate efficiently in low-res
 
 Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{?RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
-A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been reused, since reuse of a single OTS key allows for signature forgeries.
+A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been used, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier.
 {{?I-D.ietf-pquip-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
@@ -662,7 +676,7 @@ To enable secure migration from traditional to post-quantum security, PQ/T hybri
 
 A non-composite approach, where both signatures are generated and carried separately, is simple to implement, requires minimal changes to existing signing, and aligns well with current secure boot and update architectures.
 
-Composite constructions, which combine multiple algorithms into a single signature, require changes to cryptographic processing. In such constructions, the additional cost of including a traditional algorithm is typically small compared to the post-quantum component, but overall resource usage remains dominated by the post-quantum algorithm, particularly in terms of key size, signature size, code size, and verification cost.
+Composite constructions, which combine multiple algorithms into a single signature, require changes to cryptographic processing. In such constructions, the additional cost of including a traditional algorithm is typically small compared to the post-quantum component, and overall resource usage remains dominated by the post-quantum algorithm, particularly in terms of key size, signature size, code size, and verification cost.
 
 Implementations should ensure that verification enforces the intended hybrid authentication property, namely that authentication remains secure as long as at least one component algorithm remains secure.
 
