@@ -588,11 +588,9 @@ The following table lists the sizes of cryptographic artifacts for representativ
 |                       | Private Key      | 2560         |
 |                       | Signature        | 2420         |
 | SLH-DSA-SHA2-128s     | Public Key       | 32           |
-
 |                       | Private Key      | 64           |
 |                       | Signature        | 7856         |
 | SLH-DSA-SHA2-128f     | Public Key       | 32           |
-
 |                       | Private Key      | 64           |
 |                       | Signature        | 17088        |
 | LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
