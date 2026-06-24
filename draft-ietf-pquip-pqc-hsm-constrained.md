@@ -43,12 +43,12 @@ author:
     abbrev: Citrix
     country: United States of America
     email: "danwing@gmail.com"
- 
- -
+
+-
     fullname: Ben Salter
     organization: UK National Cyber Security Centre
-    email: ben.s3@ncsc.gov.uk
- -
+    email: "ben.s3@ncsc.gov.uk"
+-
     fullname: Kris Kwiatkowski
     organization: PQShield
     email: "kris@amongbytes.com"
@@ -124,7 +124,7 @@ informative:
      - ins: G. Seiler
      - ins: D. Stehle
      date: February 2021
-  NISTSecurityLevels:
+  NISTSecurityCategories:
     title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
     target: https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
     author:
@@ -344,9 +344,9 @@ Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimiz
 
 ## Memory requirements of Lattice-Based Schemes
 
-The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A*s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of security level. Conversely, the sizes of those matrices depend on the security level.
+The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A*s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of parametrization. Conversely, the sizes of those matrices depend on the parametrization of ML-KEM.
 
-To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 *5* 256 *2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5* 256 *2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3* 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other security levels as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
+To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5 *5* 256 *2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5* 256 *2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3* 2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other instantiations of ML-KEM as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
 It is worth noting that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
@@ -356,7 +356,7 @@ The lazy expansion technique is an optimization that significantly reduces memor
 
 As an example, we can look at the computation of matrix-vector multiplication t=A*s1. The matrix A is generated from a seed using a pseudo-random function (PRF), meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
 
-The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 *2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5* 256 *2 = 2560 bytes) + one element of t (5* 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for higher security levels, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
+The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256 *2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5* 256 *2 = 2560 bytes) + one element of t (5* 2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for bigger ML-DSA parameters, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
 With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y ({{FIPS204}}, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
@@ -395,37 +395,45 @@ constrained devices, which often have limited memory and storage capacity. For e
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
 
-The following table lists the sizes of cryptographic artifacts for representative instantiations of SLH-DSA and ML-KEM at NIST Security Level 1, as defined in {{NISTSecurityLevels}}, ML-DSA at NIST Security Level 2, and HSS/LMS and XMSS at NIST Security Level 3; these are the lowest defined security levels for the respective schemes.
+{{artifact-size}} presents artifact sizes organized by NIST security categories published in
+the initial call for proposals {{NISTSecurityCategories}}. The security categories are defined
+as requiring computational resources comparable to or greater than an attack on AES (128, 192, and 256)
+and SHA2/SHA3 algorithms, i.e., exhaustive key recovery for AES and optimal collision search for
+SHA2/SHA3 schemes. The table lists the sizes of cryptographic artifacts for representative instantiations
+of selected post-quantum cryptographic schemes of the lowest available security categories defined for
+the respective schemes. X25519 and Ed25519 are included for comparison; they approximately map to NIST
+Security Category 1 based on ~128-bit classical security, though this is not an official NIST designation.
 
-| Algorithm             | Type             | Size (bytes) |
-|-----------------------|------------------|--------------|
-| ML-DSA-44             | Public Key       | 1312         |
-|                       | Private Key      | 2560         |
-|                       | Signature        | 2420         |
-| SLH-DSA-SHA2-128s     | Public Key       | 32           |
-|                       | Private Key      | 64           |
-|                       | Signature        | 7856         |
-| SLH-DSA-SHA2-128f     | Public Key       | 32           |
-|                       | Private Key      | 64           |
-|                       | Signature        | 17088        |
-| LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
-|                       | Private Key      | 44           |
-|                       | Signature        | 2004         |
-| XMSS-SHA2_10_192      | Public Key       | 48           |
-|                       | Private Key      | 104          |
-|                       | Signature        | 1492         |
-| ML-KEM-512            | Public Key       | 800          |
-|                       | Private Key      | 1632         |
-|                       | Ciphertext       | 768          |
-|                       | Shared Secret    | 32           |
-| X25519                | Public Key       | 32           |
-|                       | Private Key      | 32           |
-|                       | Shared Secret    | 32           |
-| Ed25519               | Public Key       | 32           |
-|                       | Private Key      | 32           |
-|                       | Signature        | 64           |
+| Level | Algorithm             | Type             | Size (bytes) |
+|-------|-----------------------|------------------|--------------|
+|   2   | ML-DSA-44             | Public Key       | 1312         |
+|       |                       | Private Key      | 2560         |
+|       |                       | Signature        | 2420         |
+|   1   | SLH-DSA-SHA2-128s     | Public Key       | 32           |
+|       |                       | Private Key      | 64           |
+|       |                       | Signature        | 7856         |
+|   1   | SLH-DSA-SHA2-128f     | Public Key       | 32           |
+|       |                       | Private Key      | 64           |
+|       |                       | Signature        | 17088        |
+|   3   | LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
+|       |                       | Private Key      | 44           |
+|       |                       | Signature        | 2004         |
+|   3   | XMSS-SHA2_10_192      | Public Key       | 48           |
+|       |                       | Private Key      | 104          |
+|       |                       | Signature        | 1492         |
+|   1   | ML-KEM-512            | Public Key       | 800          |
+|       |                       | Private Key      | 1632         |
+|       |                       | Ciphertext       | 768          |
+|       |                       | Shared Secret    | 32           |
+|   1*  | X25519                | Public Key       | 32           |
+|       |                       | Private Key      | 32           |
+|       |                       | Shared Secret    | 32           |
+|   1*  | Ed25519               | Public Key       | 32           |
+|       |                       | Private Key      | 32           |
+|       |                       | Signature        | 64           |
+{: #artifact-size title="Sizes of cryptographic artifacts"}
 
-Corresponding sizes for higher security levels will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
+Corresponding sizes for higher security categories will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
 
 # Optimizing Performance in PQC Signature Schemes
 
