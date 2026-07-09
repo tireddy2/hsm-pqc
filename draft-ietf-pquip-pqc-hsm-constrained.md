@@ -165,7 +165,7 @@ implications of PQC on firmware update mechanisms in such constrained systems.
 The transition to post-quantum cryptography (PQC) poses significant challenges for
 resource-constrained devices, such as Internet of Things (IoT) devices, which are often
 equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of
-hardware resecurity modules (HSMs).
+hardware security modules (HSMs).
 
 These devices typically operate under strict limitations on
 processing power, RAM, and flash memory, and in some cases are battery-powered. Adopting
@@ -219,7 +219,7 @@ stored as seeds instead of expanded key material.
 
 ## Seed Management {#Seed}
 
-The following is some additional guidance to aide in compliance with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}}:
+The following is some additional guidance to aid in compliance with {{FIPS203}}, {{FIPS204}}, {{FIPS205}} and {{REC-KEM}}:
 
 ### Seed Storage
 
