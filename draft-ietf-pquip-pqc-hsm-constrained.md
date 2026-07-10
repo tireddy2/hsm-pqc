@@ -297,13 +297,13 @@ perform cryptographic operations.
 is essential to plan for backup and recovery of cryptographic seeds and private keys.
 Constrained devices should support secure seed- or key-backup mechanisms, leveraging protections such as encrypted storage and ensuring that security measures are in place so that the backup data is protected from unauthorized access.
 
-When exporting a seed or private key, the key-encryption key or the keys protecting the secure channel used for direct transfer should provide a security strength at least matching the PQ security level of the exported key. Using the security level mapping in {{?RFC9958}}, Level 1 corresponds to AES-128, Level 3 to AES-192, and Level 5 to AES-256; for example, an ML-KEM-1024 or ML-DSA-87 key (Level 5) should be protected using AES-256.
+When exporting a seed or private key, the key-encryption key or the key protecting the secure channel used for direct transfer should provide a security strength at least matching the PQ security level of the exported key. Using the security level mapping in {{?RFC9958}}, Level 1 corresponds to AES-128, Level 3 to AES-192, and Level 5 to AES-256; for example, an ML-KEM-1024 or ML-DSA-87 key (Level 5) should be protected using AES-256.
 
 There are two distinct approaches to exporting private keys or seeds from a constrained device:
 
 #### Direct Transfer Over a Secure Channel {#direct-transfer}
 
-In scenarios where the constrained device can establish a secure channel to a peer, the device can transfer encrypted private key material directly to another cryptographic module over that channel. The secure channel needs to provide mutual authentication of both endpoints, confidentiality and integrity protection of the transferred material, and end-to-end protection between the two cryptographic modules. A mutually authenticated TLS 1.3 {{?RFC8446}} connection is one example of a protocol providing these properties; DTLS 1.3 {{?RFC9147}} offers the same properties over datagram transport and may be more suitable for some constrained deployments.
+In scenarios where the constrained device can establish a secure channel to a peer, the device can transfer encrypted private key material directly to another cryptographic module over that channel. The secure channel needs to provide mutual authentication of both endpoints, confidentiality and integrity protection of the transferred material, and end-to-end protection. A mutually authenticated TLS 1.3 {{?RFC8446}} connection is one example of a protocol providing these properties; DTLS 1.3 {{?RFC9147}} offers the same properties over datagram transport and may be more suitable for some constrained deployments.
 
 #### Export of Encrypted Seeds and Private Keys {#encrypted-export}
 
