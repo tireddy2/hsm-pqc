@@ -146,6 +146,14 @@ informative:
       - ins: S. Fluhrer
       - ins: Q. Dang
     date: January 2024
+  IEEE802.1AR:
+    title: "IEEE Standard for Local and Metropolitan Area Networks - Secure Device Identity"
+    target: https://standards.ieee.org/ieee/802.1AR/6995/
+    seriesinfo:
+      IEEE: "802.1AR-2018"
+    author:
+      - org: IEEE
+    date: 2018
 
 --- abstract
 
@@ -201,10 +209,6 @@ Additional post-quantum algorithms are expected to be standardised in future, wh
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
 Actual protocol behaviour is defined in other documents.
 
-# Conventions and Definitions
-
-{::boilerplate bcp14-tagged}
-
 # Key Management in Constrained Devices for PQC
 
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
@@ -213,8 +217,8 @@ One mitigation of storage limitations is to store only the seed rather than the 
 expanded private key, as the seed is far smaller and can derive the expanded private key
 as necessary. {{FIPS204}} Section 3.6.3 specifies that the seed &xi; generated during ML-DSA.KeyGen can be stored for later use with ML-DSA.KeyGen_internal.
 To reduce storage requirements on constrained devices, private keys for
-Initial Device Identifiers (IDevIDs), Locally Significant Device
-Identifiers (LDevIDs), and the optional attestation private key can be
+Initial Device Identifiers (IDevIDs) and Locally Significant Device
+Identifiers (LDevIDs) {{IEEE802.1AR}}, and the optional attestation private key can be
 stored as seeds instead of expanded key material.
 
 ## Seed Management {#Seed}
@@ -240,11 +244,13 @@ which primarily involves polynomial operations using the Number Theoretic Transf
 and hashing, is computationally efficient compared to other post-quantum schemes. In contrast,
 SLH-DSA key generation requires constructing a Merkle tree and multiple Winternitz One-Time
 Signature (WOTS+) key generations, making it significantly more computationally intensive. In
-many embedded deployments, SLH-DSA is expected to be used primarily for firmware verification, in which
-case key generation is performed offline and does not impact device performance. However,
-in scenarios where the device generates its own SLH-DSA key pairs, the higher key generation
-cost may influence seed-storage design decisions and depend on performance considerations
-or standards compliance (e.g., PKCS#11).
+many embedded deployments, SLH-DSA is expected to be used primarily for firmware verification.
+In this case the device holds only the SLH-DSA public key; the corresponding private key is known
+solely to the firmware signer, and key generation is performed on the signer's infrastructure
+rather than on the device. Consequently, SLH-DSA key generation cost does not impact device
+performance. However, in scenarios where the device generates its own SLH-DSA key pairs, the
+higher key generation cost may influence seed-storage design decisions and depend on performance
+considerations or standards compliance (e.g., PKCS#11).
 
    While vulnerabilities like the "Unbindable Kemmy Schmidt" misbinding attack {{BIND}} demonstrate
 the risks of manipulating expanded private keys in environments lacking hardware-backed
@@ -275,7 +281,7 @@ cryptographic operation may introduce significant performance overhead. In scena
 performance is a critical consideration, it may be more efficient to store the expanded
 private key directly (in addition to the seed). Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
-overhead and delay of deriving private keys from their seeds with each request.
+overhead and delay of deriving private keys from their seeds for each operation.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar
 functions for other PQC algorithms, must be implemented in a way that can securely operate
@@ -291,15 +297,17 @@ perform cryptographic operations.
 is essential to plan for backup and recovery of cryptographic seeds and private keys.
 Constrained devices should support secure seed- or key-backup mechanisms, leveraging protections such as encrypted storage and ensuring that security measures are in place so that the backup data is protected from unauthorized access.
 
+When exporting a seed or private key, the key-encryption key or the key protecting the secure channel used for direct transfer should provide a security strength at least matching the PQ security level of the exported key. Using the security level mapping in {{?RFC9958}}, Level 1 corresponds to AES-128, Level 3 to AES-192, and Level 5 to AES-256; for example, an ML-KEM-1024 or ML-DSA-87 key (Level 5) should be protected using AES-256.
+
 There are two distinct approaches to exporting private keys or seeds from a constrained device:
 
-#### Direct Transfer Over TLS
+#### Direct Transfer Over a Secure Channel {#direct-transfer}
 
-In scenarios where the constrained device supports mutually authenticated TLS with a peer, the device can securely transfer encrypted private key material directly to another cryptographic module over a mutually authenticated TLS connection.
+In scenarios where the constrained device can establish a secure channel to a peer, the device can transfer encrypted private key material directly to another cryptographic module over that channel. The secure channel needs to provide mutual authentication of both endpoints, confidentiality and integrity protection of the transferred material, and end-to-end protection. A mutually authenticated TLS 1.3 {{?RFC8446}} connection is one example of a protocol providing these properties; DTLS 1.3 {{?RFC9147}} offers the same properties over datagram transport and may be more suitable for some constrained deployments.
 
-#### Export of Encrypted Seeds and Private Keys
+#### Export of Encrypted Seeds and Private Keys {#encrypted-export}
 
-In more common constrained device scenarios for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES in key-wrap mode ({{!RFC3394}}), should be used to encrypt the seed or private key before export. This ensures that the key remains protected even if the export process is vulnerable to quantum attacks.
+In more common constrained device scenarios for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES Key Wrap with Padding ({{!RFC5649}}), should be used to encrypt the seed or private key before export. {{!RFC5649}} adds padding to handle key material whose length is not a multiple of 8 octets, such as an expanded private key that does not fall on that boundary. 
 
 Operationally, the exported data and the symmetric key used for encryption must both be protected against unauthorized access or modification.
 
@@ -330,13 +338,13 @@ Constrained devices implementing PQC ephemeral key management will have to:
 - Delete the private key after the shared secret is derived.
 - Prevent key reuse across different algorithm suites or sessions.
 
-# Optimizing Memory Footprint in Post-Quantum Signature Schemes
+# Optimizing Memory Footprint in Post-Quantum Signature Schemes {#sig-mem}
 
 A key consideration when deploying post-quantum cryptography in cryptographic modules is the amount and type of memory available. In constrained devices, it is important to distinguish between volatile memory (RAM), used for intermediate computations during cryptographic operations, and non-volatile storage (e.g., flash), used for storing keys, firmware, and configuration data. For instance, ML-DSA, unlike traditional signature schemes such as RSA or ECDSA, requires significant RAM during signing due to multiple Number Theoretic Transform (NTT) operations, matrix expansions, and rejection sampling loops. These steps involve storing large polynomial vectors and intermediate values, making ML-DSA more memory-intensive.
 
 Some constrained systems, particularly battery-operated devices, may have limited RAM available for cryptographic operations, even if sufficient non-volatile storage is available. In such cases, straightforward implementations of PQ schemes may exceed available RAM, making them infeasible without optimization.
 
-Several post-quantum schemes can be optimized to reduce the memory footprint of the algorithm. For instance, SLH-DSA has two flavours: the "f" variants which are parameterized to run as fast as possible, and the "s" variants which produce shorter signatures. Developers wishing to use SLH-DSA may wish to utilize the "s" variants on devices with insufficient RAM to use the "f" variants. Further optimizations may be possible by running the signature algorithm in a "streaming manner" such that constrained device does not need to hold the entire signature in memory at once, as discussed in {{Stream-SPHINCS}}.
+Several post-quantum schemes can be optimized to reduce the memory footprint of the algorithm. For instance, SLH-DSA has two flavors: the "f" variants which are parameterized to run as fast as possible, and the "s" variants which produce shorter signatures. Developers wishing to use SLH-DSA may wish to utilize the "s" variants on devices with insufficient RAM to use the "f" variants. Further optimizations may be possible by running the signature algorithm in a "streaming manner" such that constrained device does not need to hold the entire signature in memory at once, as discussed in {{Stream-SPHINCS}}.
 
 Implementations may trade off resource usage across CPU, RAM, and non-volatile storage. For example, techniques such as lazy expansion reduce RAM usage at the cost of increased computation, while storing expanded key in non-volatile storage can reduce runtime overhead. Designers should balance these trade-offs based on the target platform.
 
@@ -435,7 +443,7 @@ Security Category 1 based on ~128-bit classical security, though this is not an 
 
 Corresponding sizes for higher security categories will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
 
-# Optimizing Performance in PQC Signature Schemes
+# Optimizing Performance in PQC Signature Schemes {#sig-perf}
 
 When implementing PQC signature algorithms in constrained cryptographic modules,
 performance optimization becomes a critical consideration. Transmitting the entire message
@@ -450,7 +458,6 @@ better performance. This method is applicable for any PQC signature algorithm, w
 is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
 often provided to pre-hash or process the message in a way that avoids sending the entire
 raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
-
 their construction, which requires multiple passes over the message digest during the
 signing process. The signer does not retain the entire message or its full digest in
 memory at once. Instead, different parts of the message digest are processed sequentially
@@ -571,6 +578,8 @@ As discussed in {{Seed}}, in many deployment scenarios, constrained devices prim
 Devices that only verify signatures are not affected, as those operations do not involve rejection sampling and have deterministic execution times.
 
 In firmware update and secure boot scenarios, signature verification is typically performed during early boot stages, where the bootloader has exclusive access to system resources. In such environments, the practical impact of resource constraints on signature verification is reduced compared to general runtime environments.
+
+Verification does not always occur during early boot. In devices that keep a second firmware image and switch to it only after verifying it, the new image is verified while the current firmware runs, so verification competes with the device's normal workload for CPU, RAM, and energy. The optimizations in {{sig-mem}} and {{sig-perf}} are therefore especially relevant when verification runs concurrently with normal operation.
 
 ### Suggestions for benchmarking ML-DSA Signing Performance
 
@@ -707,4 +716,4 @@ Side-channel attacks exploit physical leaks during cryptographic operations, suc
 
 # Acknowledgments
 
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Keegan Dasilva Barbosa, Hannes Tschofenig and Aritra Banerjee for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig and Aritra Banerjee for the detailed review.
