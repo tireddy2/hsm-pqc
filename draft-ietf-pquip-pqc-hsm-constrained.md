@@ -621,7 +621,7 @@ comparability across implementations.
 In constrained devices, managing the lifecycle of cryptographic
 keys including periodic key rotation and renewal is critical for maintaining long-term
 security and supporting cryptographic agility. While constrained devices may rely on
-integrated secure elements for secure key storage and operations, the
+dedicated key-storage hardware for secure key storage and operations, the
 responsibility for orchestrating key rotation typically resides in the application layer
 or external device management infrastructure.
 
