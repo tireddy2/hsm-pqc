@@ -158,8 +158,8 @@ informative:
 --- abstract
 
 This document provides guidance on integrating Post-Quantum Cryptography (PQC) into
-resource-constrained devices, such as IoT nodes and lightweight Hardware Security Modules
-(HSMs). These systems often operate with strict limitations on processing power, RAM, and
+resource-constrained devices, such as IoT nodes and dedicated key-storage hardware.
+These systems often operate with strict limitations on processing power, RAM, and
 flash memory, and may even be battery-powered. The document emphasizes the role of hardware
 security as the basis for secure operations, supporting features such as seed-based key
 generation to minimize persistent storage, efficient handling of ephemeral keys, and the
@@ -171,9 +171,8 @@ implications of PQC on firmware update mechanisms in such constrained systems.
 # Introduction
 
 The transition to post-quantum cryptography (PQC) poses significant challenges for
-resource-constrained devices, such as Internet of Things (IoT) devices, which are often
-equipped with Trusted Execution Environments (TEEs), secure elements, or other forms of
-hardware security modules (HSMs).
+resource-constrained devices, such as dedicated key-storage hardware and
+Internet of Things (IoT) devices.
 
 These devices typically operate under strict limitations on
 processing power, RAM, and flash memory, and in some cases are battery-powered. Adopting
@@ -624,7 +623,7 @@ comparability across implementations.
 In constrained devices, managing the lifecycle of cryptographic
 keys including periodic key rotation and renewal is critical for maintaining long-term
 security and supporting cryptographic agility. While constrained devices may rely on
-integrated secure elements or lightweight HSMs for secure key storage and operations, the
+dedicated key-storage hardware for secure key storage and operations, the
 responsibility for orchestrating key rotation typically resides in the application layer
 or external device management infrastructure.
 
