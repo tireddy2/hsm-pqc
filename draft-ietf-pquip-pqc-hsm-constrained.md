@@ -286,8 +286,8 @@ overhead and delay of deriving private keys from their seeds for each operation.
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar
 functions for other PQC algorithms, must be implemented in a way that can securely operate
 within the resource constraints of the device. If using the seed-only model, the derived
-private key should only be temporarily held in memory during the cryptographic operation,
-and the memory holding it must be zeroized immediately after use. However, storing the expanded private key may be a
+private key should only be temporarily held in memory during the cryptographic operation
+and discarded immediately after use. However, storing the expanded private key may be a
 more practical solution in time-sensitive applications or for devices that frequently
 perform cryptographic operations.
 
@@ -715,8 +715,6 @@ unauthorized access.
 ## Side Channel Protection
 
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, their significance in secure hardware design cannot be understated. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
-
-ML-DSA supports both deterministic and hedged signing. On platforms where side-channel attacks are a concern and cannot be otherwise mitigated, hedged signing should be used, as discussed in Section 3.4 of {{FIPS204}}.
 
 # Acknowledgments
 
