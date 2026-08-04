@@ -285,9 +285,10 @@ overhead and delay of deriving private keys from their seeds for each operation.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar
 functions for other PQC algorithms, must be implemented in a way that can securely operate
-within the resource constraints of the device. If using the seed-only model, the derived
-private key should only be temporarily held in memory during the cryptographic operation,
-and the memory holding it must be zeroized {{?RFC4949}} immediately after use. However, storing the expanded private key may be a
+within the resource constraints of the device.If using the seed-only model, the derived 
+private key should exist only transiently, held for the duration of the cryptographic operation, 
+and any state derived from it should be securely erased or otherwise made 
+unrecoverable as soon as it is no longer needed. However, storing the expanded private key may be a
 more practical solution in time-sensitive applications or for devices that frequently
 perform cryptographic operations.
 
