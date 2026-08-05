@@ -519,7 +519,7 @@ the ML-DSA parameter set and are summarized below.
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
 succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
 the number of attempts until success follows approximately a geometric distribution, under the
-heuristic assumptions of {{Li32}} Equation 5, and the Table {{MLDSA_Sign_CDF}} reflects the
+heuristic assumptions of {{Li32}} Equation 5, and {{MLDSA_Sign_CDF}} reflects the
 CDF of this distribution. The expected number of signing iterations until a successful signature
 is generated is the reciprocal of the acceptance probability. Hence, if r denotes the per-iteration
 rejection probability and p = 1 - r the acceptance probability, then the expected number of signing
@@ -559,11 +559,11 @@ at most a given number of iterations.
 | 11         | 0.9475              | 0.9096              | 0.9634              |
 {: #MLDSA_Sign_CDF title="CDF values denote the probability of completing the signing process within the given number of iterations, for each ML-DSA variant."}
 
-Table {{MLDSA_Sign_CDF}} shows the cumulative probability of completing the signing process within
+{{MLDSA_Sign_CDF}} shows the cumulative probability of completing the signing process within
 a given number of iterations. These values follow directly from the geometric distribution of
 iteration counts, with per-attempt acceptance probabilities of approximately 20% to 26% (as shown in
-table {{Acceptance_Probabilities}}) and expected iteration counts of roughly 4 to 5 (as shown in
-table {{Expected_Attempts}}). After 11 iterations, each ML-DSA variant achieves over 90% probability
+{{Acceptance_Probabilities}}) and expected iteration counts of roughly 4 to 5 (as shown in
+{{Expected_Attempts}}). After 11 iterations, each ML-DSA variant achieves over 90% probability
 of completing the signing process.
 
 ### Practical Implications for Constrained Cryptographic Modules
@@ -607,7 +607,7 @@ and provides insight into the efficiency of the core signing operation.
 2. Average signing time:
 Since the iteration count follows a geometric distribution (as described in {{mldsa-rej-sampling}}),
 the expected signing time can be computed analytically as the fixed setup cost plus the per-iteration
-cost multiplied by the expected number of iterations from Table {{Expected_Attempts}}.
+cost multiplied by the expected number of iterations from {{Expected_Attempts}}.
 Implementations may instead measure average signing time empirically over a sufficiently large number of
 signing operations, using independent messages and, where applicable, independent randomness, to validate
 against the analytical model on the target hardware. This approach requires identifying a message, key,
