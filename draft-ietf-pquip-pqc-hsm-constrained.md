@@ -528,11 +528,11 @@ probability that the hint-correctness bound on line 28 is violated, and
 P_hint the probability that the attempt produces more hints than the
 signature format can encode.
 
-| ML-DSA Variant | P_norm  | P_ct0 (reject) | P_hint (reject)    | p      |
-|----------------|---------|----------------|--------------------|--------|
-| ML-DSA-44      | 0.23272 | 7.3e-9         | 0.01464 +- 0.00016 | 0.2293 |
-| ML-DSA-65      | 0.19539 | 0.0            | 0.00374 +- 0.00008 | 0.1947 |
-| ML-DSA-87      | 0.25809 | 0.0            | 0.00775 +- 0.00011 | 0.2561 |
+| ML-DSA Variant | P_norm  | P_ct0 (reject) | P_hint (reject)       | p      |
+|----------------|---------|----------------|-----------------------|--------|
+| ML-DSA-44      | 0.23272 | 7.3e-9         | 0.01464 (+/- 0.00016) | 0.2293 |
+| ML-DSA-65      | 0.19539 | 0.0            | 0.00374 (+/- 0.00008) | 0.1947 |
+| ML-DSA-87      | 0.25809 | 0.0            | 0.00775 (+/- 0.00011) | 0.2561 |
 {: #Acceptance_Probabilities title="Per-attempt rejection factors and the resulting probability of successful signing."}
 
 For ML-DSA-65 and ML-DSA-87, P_ct0 is exactly 0: each coefficient of c*t0 is
