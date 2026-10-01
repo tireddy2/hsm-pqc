@@ -155,10 +155,11 @@ informative:
       - org: IEEE
     date: 2018
   KWI2026:
-   title: "Benchmarking ML-DSA Signature Generation: Understanding Rejection Sampling Performance"
-   target: TODO
+   title: "The Rejection Rate of ML-DSA Signing: Correcting FIPS-204"
+   target: https://amongbytes.com/posts/rejection-rate-of-mldsa-signing
    author:
      - ins: K. Kwiatkowski
+   date: October 2026
 
 
 --- abstract
