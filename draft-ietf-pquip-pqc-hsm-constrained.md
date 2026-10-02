@@ -535,9 +535,10 @@ signature format can encode.
 | ML-DSA-87      | 0.25809 | 0.0            | 0.00775 (+/- 0.00011) | 0.2561 |
 {: #Acceptance_Probabilities title="Per-attempt rejection factors and the resulting probability of successful signing."}
 
-Note that P_ct0 is exactly zero for ML-DSA-65 and ML-DSA-87, and negligible
-for ML-DSA-44. This follows from the parameter choices; see {{KWI2026}} for
-details.
+Note that P_ct0 is exactly zero for ML-DSA-65 and ML-DSA-87, meaning this
+check never fails for those two parameter sets. For ML-DSA-44 it is
+negligible, so the check fails only extremely rarely. This follows from the
+parameter choices; see {{KWI2026}} for details.
 
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
 either succeeds or is rejected, with a fixed per-attempt acceptance probability.
