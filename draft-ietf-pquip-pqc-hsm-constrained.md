@@ -536,7 +536,7 @@ signature format can encode.
 {: #Acceptance_Probabilities title="Per-attempt rejection factors and the resulting probability of successful signing."}
 
 For ML-DSA-65 and ML-DSA-87, P_ct0 is exactly 0: each coefficient of c*t0 is
-a signed sum of tau coefficients of t0, so |c*t0| <= tau * 2^(d-1), which is
+a signed sum of tau coefficients of t0, so |c\*t0| <= tau * 2^(d-1), which is
 200704 and 245760 respectively - both below gamma2 = 261888 and hence check
 never fires. For ML-DSA-44 the bound is 159744, above gamma2 = 95232, so the
 check can fire (values c, t0, tau, d and gamma2 are defined in {{FIPS204}}).
