@@ -535,18 +535,14 @@ signature format can encode.
 | ML-DSA-87      | 0.25809 | 0.0            | 0.00775 (+/- 0.00011) | 0.2561 |
 {: #Acceptance_Probabilities title="Per-attempt rejection factors and the resulting probability of successful signing."}
 
-For ML-DSA-65 and ML-DSA-87, P_ct0 is exactly 0: each coefficient of c\*t0 is
-a signed sum of tau coefficients of t0, so |c\*t0| <= tau * 2^(d-1), which is
-200704 and 245760 respectively - both below gamma2 = 261888 and hence check
-never fires. For ML-DSA-44 the bound is 159744, above gamma2 = 95232, so the
-check can fire (values c, t0, tau, d and gamma2 are defined in {{FIPS204}}).
+Note that P_ct0 is exactly zero for ML-DSA-65 and ML-DSA-87, and negligible
+for ML-DSA-44. This follows from the parameter choices; see {{KWI2026}} for
+details.
 
-Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
-succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
-the number of attempts until success follows a geometric distribution. {{MLDSA_Sign_CDF}}
-reflects the CDF of this distribution. The expected number of signing iterations until a successful signature
-is generated is the reciprocal of the acceptance probability, 1/p. Using this model,
-the expected number of signing attempts for each ML-DSA variant is shown below.
+Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
+either succeeds or is rejected, with a fixed per-attempt acceptance probability.
+Under this assumption, the number of attempts until success follows a geometric
+distribution.
 
 | ML-DSA Variant | Expected Number of Attempts |
 |----------------|-----------------------------|
@@ -554,6 +550,11 @@ the expected number of signing attempts for each ML-DSA variant is shown below.
 | ML-DSA-65      | 5.136                       |
 | ML-DSA-87      | 3.905                       |
 {: #Expected_Attempts title="Expected Number of Attempts for the given ML-DSA variant."}
+
+{{MLDSA_Sign_CDF}} reflects the CDF of this distribution. The expected number of
+signing iterations until a successful signature is generated is the reciprocal of
+the acceptance probability, 1/p. Using this model, the expected number of signing
+ attempts for each ML-DSA variant is shown below.
 
 The cumulative distribution function (CDF) follows directly from the geometric
 model. The CDF expresses the probability that the signing process completes
