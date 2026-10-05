@@ -160,6 +160,12 @@ informative:
    author:
      - ins: K. Kwiatkowski
    date: October 2026
+  FIPS204_errata:
+   title: "FIPS 204 - Potential Updates (Errata)"
+   target: "https://csrc.nist.gov/files/pubs/fips/204/final/docs/fips-204-potential-updates.xlsx"
+   author:
+   - org: NIST
+   date: July 2026
 
 
 --- abstract
@@ -512,19 +518,19 @@ The number of rejections during signature generation depends on four factors:
 As a result, some message-key combinations may lead to a higher number of
 rejection iterations than others.
 
-Using analysis of rejection sampling from {{KWI2026}} and assuming a random
-bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1), the rejection
-probability during ML-DSA signing can be computed.
-
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
 either succeeds or is rejected, with a fixed per-attempt acceptance probability.
 Under this assumption, the number of attempts until success follows a geometric
-distribution.
+distribution, and the expected number of attempts is the reciprocal of the
+acceptance probability.
+
+The values below are taken from {{KWI2026}}, assuming a random bit generator
+(RBG) as specified in {{FIPS204}} (Section 3.6.1).
 
 | ML-DSA Variant | Per-attempt Acceptance | Expected Number of Attempts |
 |----------------|------------------------|-----------------------------|
 | ML-DSA-44      | 0.2293                 | 4.361                       |
-| ML-DSA-65      | 0.1947                 | 5.136                       |
+| ML-DSA-65      | 0.1947                 | 5.137                       |
 | ML-DSA-87      | 0.2561                 | 3.905                       |
 {: #Expected_Attempts title="Per-attempt acceptance probability and expected number of attempts for the given ML-DSA variant."}
 
@@ -572,9 +578,24 @@ Finally, {{FIPS204}} Appendix C provides guidance on bounding the signing
 loop, deriving a limit of 814 iterations for a failure probability of at most
 2^-256. That derivation uses the expected repetition counts from
 {{FIPS204}} Table 1. Applying the same method to the corrected counts above
-gives 820, and implementations that bound the loop should use that value
-instead. A limit of 814 is not unsafe - it corresponds to a failure
+gives 820 (versus 821 of {{FIPS204_errata}}), and implementations that bound the loop should
+use that value instead. A limit of 814 is not unsafe - it corresponds to a failure
 probability of 2^-254.2 - but it is short of its stated target.
+
+{{FIPS204}} Appendix C bounds the signing loop at 814 iterations for a
+failure probability of at most 2^-256, based on the expected repetition
+counts in {{FIPS204}} Table 1. A more precise computation of these counts
+(see {{Expected_Attempts}}) gives 5.137 for ML-DSA-65, the parameter set
+with the highest repetition count, which yields a limit of 820 iterations;
+with 814, the probability that signing fails to complete is about
+2^-254.2, slightly short of the 2^-256 target. This does not affect the
+security of ML-DSA, as such a failure only requires signing to be
+retried. The FIPS 204 potential updates {{FIPS204_updates}} also conclude
+that 814 is too low, but compute the limit from the rounded count 5.14,
+giving 821.This is one iteration above the minimum derived here, so it
+also meets the 2^-256 target.For FIPS compliance, implementations that
+bound the loop should use the limit specified in {{FIPS204}}, or in a
+published update to it.
 
 ### Practical Implications for Constrained Cryptographic Modules
 
