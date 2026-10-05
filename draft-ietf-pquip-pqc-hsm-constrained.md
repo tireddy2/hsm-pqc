@@ -512,45 +512,21 @@ The number of rejections during signature generation depends on four factors:
 As a result, some message-key combinations may lead to a higher number of
 rejection iterations than others.
 
-Rejection happens in two places in {{FIPS204}} Algorithm 7: the validity
-checks on line 23, and the hint-related checks on line 28. The latter are a
-consequence of public-key compression rather than of security.
-
-Equation (5) of {{Li32}} covers only line 23, and approximates it with about
-1% error. Instead, this document uses the analysis from {{KWI2026}}. An
-attempt succeeds only if all checks pass, so the per-attempt success probability
-is:
-
-p = P_norm * (1 - P_ct0) * (1 - P_hint)
-
-where P_norm is the probability of passing the line-23 norm checks, P_ct0 the
-probability that the hint-correctness bound on line 28 is violated, and
-P_hint the probability that the attempt produces more hints than the
-signature format can encode.
-
-| ML-DSA Variant | P_norm  | P_ct0 (reject) | P_hint (reject)       | p      |
-|----------------|---------|----------------|-----------------------|--------|
-| ML-DSA-44      | 0.23272 | 7.3e-9         | 0.01464 (+/- 0.00016) | 0.2293 |
-| ML-DSA-65      | 0.19539 | 0.0            | 0.00374 (+/- 0.00008) | 0.1947 |
-| ML-DSA-87      | 0.25809 | 0.0            | 0.00775 (+/- 0.00011) | 0.2561 |
-{: #Acceptance_Probabilities title="Per-attempt rejection factors and the resulting probability of successful signing."}
-
-Note that P_ct0 is exactly zero for ML-DSA-65 and ML-DSA-87, meaning this
-check never fails for those two parameter sets. For ML-DSA-44 it is
-negligible, so the check fails only extremely rarely. This follows from the
-parameter choices; see {{KWI2026}} for details.
+Using analysis of rejection sampling from {{KWI2026}} and assuming a random
+bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1), the rejection
+probability during ML-DSA signing can be computed.
 
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
 either succeeds or is rejected, with a fixed per-attempt acceptance probability.
 Under this assumption, the number of attempts until success follows a geometric
 distribution.
 
-| ML-DSA Variant | Expected Number of Attempts |
-|----------------|-----------------------------|
-| ML-DSA-44      | 4.361                       |
-| ML-DSA-65      | 5.136                       |
-| ML-DSA-87      | 3.905                       |
-{: #Expected_Attempts title="Expected Number of Attempts for the given ML-DSA variant."}
+| ML-DSA Variant | Per-attempt Acceptance | Expected Number of Attempts |
+|----------------|------------------------|-----------------------------|
+| ML-DSA-44      | 0.2293                 | 4.361                       |
+| ML-DSA-65      | 0.1947                 | 5.136                       |
+| ML-DSA-87      | 0.2561                 | 3.905                       |
+{: #Expected_Attempts title="Per-attempt acceptance probability and expected number of attempts for the given ML-DSA variant."}
 
 {{MLDSA_Sign_CDF}} reflects the CDF of this distribution. The expected number of
 signing iterations until a successful signature is generated is the reciprocal of
