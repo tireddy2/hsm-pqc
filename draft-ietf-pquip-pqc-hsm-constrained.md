@@ -223,7 +223,7 @@ Actual protocol behaviour is defined in other documents.
 
 # Key Management in Constrained Devices for PQC
 
-The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exhausted by the increased key sizes and computational demands of PQC algorithms.
+The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exacerbated by the increased key sizes and computational demands of PQC algorithms.
 
 One mitigation of storage limitations is to store only the seed rather than the full
 expanded private key, as the seed is far smaller and can derive the expanded private key
@@ -318,7 +318,8 @@ There are two distinct approaches to exporting private keys or seeds from a cons
 
 In scenarios where the constrained device can establish a secure channel to a peer, the device can transfer encrypted private key material directly to another cryptographic module over that channel. The secure channel needs to provide mutual authentication of both endpoints, confidentiality and integrity protection of the transferred material, and end-to-end protection. A mutually authenticated TLS 1.3 {{?RFC9846}} connection is one example of a protocol providing these properties; DTLS 1.3 {{?RFC9147}} offers the same properties over datagram transport and may be more suitable for some constrained deployments.
 
-Since private key material is a long-lived secret, its transfer is particularly exposed to the "harvest now, decrypt later" (HNDL) attack described above: an attacker records the protected traffic today and decrypts it once a CRQC is available. To mitigate this threat, the secure channel must be established with a key exchange that provides post-quantum security; for (D)TLS 1.3, this can be achieved with a hybrid key exchange combining ECDHE with ML-KEM {{?RFC10024}} or with a standalone ML-KEM key exchange {{?I-D.ietf-tls-mlkem}}. Post-quantum key exchange alone is sufficient to protect against HNDL, as authentication cannot be broken retroactively; however, once CRQCs are available, an attacker could impersonate an endpoint during channel establishment, so post-quantum authentication, e.g., with ML-DSA {{?I-D.ietf-tls-mldsa}}, should additionally be used.
+Since private key material is a long-lived secret, its transfer is particularly exposed to the "harvest now, decrypt later" (HNDL) attack: an attacker records the protected traffic today and decrypts it once a "cryptographically relevant
+quantum computer" (CRQC) is available. To mitigate this threat, the secure channel must be established with a key exchange that provides post-quantum security; for (D)TLS 1.3, this can be achieved with a hybrid key exchange combining ECDHE with ML-KEM {{?RFC10024}} or with a standalone ML-KEM key exchange {{?I-D.ietf-tls-mlkem}}. Post-quantum key exchange alone is sufficient to protect against HNDL, as authentication cannot be broken retroactively; however, once CRQCs are available, an attacker could impersonate an endpoint during channel establishment, so post-quantum authentication, e.g., with ML-DSA {{?I-D.ietf-tls-mldsa}}, should additionally be used.
 
 #### Export of Encrypted Seeds and Private Keys {#encrypted-export}
 
@@ -339,7 +340,7 @@ For PQC KEMs, ephemeral key pairs are generated from an ephemeral seed, that is 
 immediately during key generation and then discarded. Furthermore, once the shared secret is
 derived, the ephemeral private key will have to be deleted. Since the private key resides in the
 constrained cryptographic module, removing it optimizes memory usage, reducing the footprint of
-PQC key material in the cryptographic module. This also ensures that that no unnecessary secrets
+PQC key material in the cryptographic module. This also ensures that no unnecessary secrets
 persist beyond their intended use.
 
 Additionally, ephemeral keys, whether from traditional ECDH or PQC KEM algorithms, are intended
@@ -399,7 +400,7 @@ discusses leveraging External&mu;-ML-DSA, where the pre-hashing step
 (External&mu;-ML-DSA.Prehash) is performed in a software cryptographic module, and only the
 pre-hashed message (&mu;) is sent to the hardware cryptographic module for signing
 (External&mu;-ML-DSA.Sign). By implementing External&mu;-ML-DSA.Prehash in software and
-External&mu;-ML-DSA.Sign in an hardware cryptographic module, the cryptographic workload
+External&mu;-ML-DSA.Sign in a hardware cryptographic module, the cryptographic workload
 is efficiently distributed, making it practical for high-volume signing operations even
 in memory-constrained cryptographic modules.
 
@@ -499,7 +500,7 @@ commonly used as a core mechanism in traditional digital signature schemes.
 Rejection sampling is used to ensure that intermediate and output values follow the
 distributions required by the security proof. In particular, after computing candidate signature
 components, the signer checks whether certain norm bounds are satisfied. If any of these bounds
-are violated, the entire signing attempt is discarded and restarted with fresh randomness.
+are violated, the entire signing attempt is discarded and restarted with fresh pseudorandom values.
 
 The purpose of rejection sampling is twofold: First, it prevents leakage of information about the
 secret key through out-of-range values that could otherwise bias the distribution of signatures.
@@ -517,10 +518,9 @@ As a result, some message-key combinations may lead to a higher number of
 rejection iterations than others.
 
 Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
-either succeeds or is rejected, with a fixed per-attempt acceptance probability.
+either succeeds or is rejected, with a fixed per-attempt acceptance probability p.
 Under this assumption, the number of attempts until success follows a geometric
-distribution, and the expected number of attempts is the reciprocal of the
-acceptance probability.
+distribution, and the expected number of attempts is 1/p.
 
 The values below are taken from {{KWI2026}}, assuming a random bit generator
 (RBG) as specified in {{FIPS204}} (Section 3.6.1).
@@ -626,14 +626,16 @@ and provides insight into the efficiency of the core signing operation.
 Since the iteration count follows a geometric distribution (as described in {{mldsa-rej-sampling}}),
 the expected signing time can be computed analytically as the fixed setup cost plus the per-iteration
 cost multiplied by the expected number of iterations from {{Expected_Attempts}}.
-Implementations may instead measure average signing time empirically over a sufficiently large number of
+Implementations may also measure average signing time empirically over a sufficiently large number of
 signing operations, using independent messages and, where applicable, independent randomness, to validate
-against the analytical model on the target hardware. This approach requires identifying a message, key,
-and randomness combination that results in the expected iteration count.
+against the analytical model on the target hardware.
 
-Rather than relying on ad hoc random inputs, benchmarks may use a standardized input data set covering best-case,
-average, and worst-case vectors with documented occurrence probabilities, to ensure reproducibility and
-comparability across implementations.
+Rather than relying on ad hoc random inputs, benchmarks may use a standardized input data set covering
+best-case, average, and worst-case vectors with documented occurrence probabilities, to ensure
+reproducibility and comparability across implementations. This requires identifying message, key and randomness
+combinations that result in the target iteration counts, e.g., a single iteration for the best case, the
+expected count rounded to the nearest integer for the average case, and a high quantile such as the 99% value
+from {{MLDSA_Sign_Quantiles}} for the worst case.
 
 # Additional Considerations for PQC Use in Constrained Devices
 
@@ -657,7 +659,7 @@ advances in post-quantum algorithms, cryptanalytic or implementation vulnerabili
 result, constrained devices should be designed to support flexible and updatable key
 management policies. This includes the ability to:
 
-- Rotate keys periodically to provide forward-secrecy,
+- Rotate keys periodically to limit the impact of a key compromise,
 
 - Update algorithm choices or key sizes based on emerging security guidance,
 
@@ -667,12 +669,11 @@ management policies. This includes the ability to:
 
 Constrained devices deployed in the field require periodic firmware upgrades to patch
 security vulnerabilities, introduce new cryptographic algorithms, and improve overall
-functionality. However, if not designed to withstand attacks from a Cryptographically
-Relevant Quantum Computer (CRQC), the firmware update process itself can become a critical
-attack vector. If an adversary compromises the update mechanism, they could introduce malicious
-firmware, undermining all other security properties of the cryptographic modules. Therefore,
-ensuring a post-quantum firmware upgrade process is critical for the security of deployed constrained
-devices.
+functionality. However, if not designed to withstand attacks from a CRQC, the firmware update
+process itself can become a critical attack vector. If an adversary compromises the update mechanism,
+they could introduce malicious firmware, undermining all other security properties of the
+cryptographic modules. Therefore, ensuring a post-quantum firmware upgrade process is critical
+for the security of deployed constrained devices.
 
 CRQCs pose an additional risk by breaking traditional digital signatures (e.g., RSA,
 ECDSA) used to authenticate firmware updates. If firmware verification relies on
@@ -684,7 +685,7 @@ and distribute malicious updates.
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
 
-{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software devices. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software updates. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
 
 Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{?RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
@@ -727,12 +728,12 @@ secure storage and handling of cryptographic seeds, which are used to derive pri
 Seeds must be protected with the same security measures as private keys, and key
 derivation should be efficient and secure within resource-constrained cryptographic
 module. Secure export and backup mechanisms for seeds are essential to ensure recovery in
-case of hardware failure, but these processes must be encrypted and protected from
+case of hardware failure, but the exported seeds must be encrypted and protected from
 unauthorized access.
 
 ## Side Channel Protection
 
-Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, their significance in secure hardware design cannot be understated. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
+Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, they are a major concern in secure hardware design and must not be overlooked. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
 
 ML-DSA supports both deterministic and hedged signing. On platforms where side-channel attacks are a concern and cannot be otherwise mitigated, hedged signing should be used, as discussed in Section 3.4 of {{FIPS204}}.
 
