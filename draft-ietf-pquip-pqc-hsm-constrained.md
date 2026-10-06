@@ -532,14 +532,11 @@ The values below are taken from {{KWI2026}}, assuming a random bit generator
 | ML-DSA-87      | 0.2561                 | 3.905                       |
 {: #Expected_Attempts title="Per-attempt acceptance probability and expected number of attempts for the given ML-DSA variant."}
 
-{{MLDSA_Sign_CDF}} reflects the CDF of this distribution. The expected number of
-signing iterations until a successful signature is generated is the reciprocal of
-the acceptance probability, 1/p. Using this model, the expected number of signing
- attempts for each ML-DSA variant is shown above.
-
 The cumulative distribution function (CDF) follows directly from the geometric
-model. The CDF expresses the probability that the signing process completes
-within at most a given number of iterations.
+model. {{MLDSA_Sign_CDF}} shows, for each ML-DSA variant, the probability that
+signing completes within a given number of iterations. The first rows matter
+most in practice: more than half of all signing operations complete within 3
+iterations (4 for ML-DSA-65).
 
 | Iteration | ML-DSA-44 | ML-DSA-65 | ML-DSA-87 |
 |-----------|-----------|-----------|-----------|
