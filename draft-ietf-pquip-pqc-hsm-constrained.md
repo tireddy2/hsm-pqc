@@ -590,10 +590,10 @@ with the highest repetition count, which yields a limit of 820 iterations;
 with 814, the probability that signing fails to complete is about
 2^-254.2, slightly short of the 2^-256 target. This does not affect the
 security of ML-DSA, as such a failure only requires signing to be
-retried. The FIPS 204 potential updates {{FIPS204_updates}} also conclude
+retried. The FIPS 204 potential updates {{FIPS204_errata}} also conclude
 that 814 is too low, but compute the limit from the rounded count 5.14,
 giving 821.This is one iteration above the minimum derived here, so it
-also meets the 2^-256 target.For FIPS compliance, implementations that
+also meets the 2^-256 target. For FIPS compliance, implementations that
 bound the loop should use the limit specified in {{FIPS204}}, or in a
 published update to it.
 
