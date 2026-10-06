@@ -154,6 +154,19 @@ informative:
     author:
       - org: IEEE
     date: 2018
+  KWI2026:
+   title: "The Rejection Rate of ML-DSA Signing: Correcting FIPS-204"
+   target: https://amongbytes.com/posts/rejection-rate-of-mldsa-signing
+   author:
+     - ins: K. Kwiatkowski
+   date: October 2026
+  FIPS204_errata:
+   title: "FIPS 204 - Potential Updates (Errata)"
+   target: "https://csrc.nist.gov/files/pubs/fips/204/final/docs/fips-204-potential-updates.xlsx"
+   author:
+   - org: NIST
+   date: July 2026
+
 
 --- abstract
 
@@ -284,9 +297,9 @@ overhead and delay of deriving private keys from their seeds for each operation.
 
    The key derivation process, such as ML-KEM.KeyGen_internal for ML-KEM or similar
 functions for other PQC algorithms, must be implemented in a way that can securely operate
-within the resource constraints of the device. If using the seed-only model, the derived 
-private key should exist only transiently, held for the duration of the cryptographic operation, 
-and any state derived from it should be securely erased or otherwise made 
+within the resource constraints of the device. If using the seed-only model, the derived
+private key should exist only transiently, held for the duration of the cryptographic operation,
+and any state derived from it should be securely erased or otherwise made
 unrecoverable as soon as it is no longer needed. However, storing the expanded private key may be a
 more practical solution in time-sensitive applications or for devices that frequently
 perform cryptographic operations.
@@ -475,9 +488,9 @@ nature of the signing process. While this results in a variable number of iterat
 algorithm, the expected number of retries for the standardized ML-DSA parameter sets is quantified
 below.
 
-The analysis in this section follows the algorithmic structure and assumptions defined in {{FIPS204}}.
-Accordingly, the numerical results are analytically derived and characterize the expected behavior
-of ML-DSA.
+The analysis in this section follows the algorithmic structure and assumptions defined in
+{{FIPS204}}. The results characterize the expected behavior of ML-DSA rather than any particular
+implementation.
 
 The ML-DSA signature scheme uses the Fiat-Shamir with Aborts construction {{Lyu09}}. As a
 result, the signature generation algorithm is built around a rejection-sampling loop. This
@@ -493,7 +506,7 @@ The purpose of rejection sampling is twofold: First, it prevents leakage of info
 secret key through out-of-range values that could otherwise bias the distribution of signatures.
 Second, it ensures that the distribution of valid signatures is statistically close to the ideal
 distribution assumed in the security reduction, namely the zero-knowledge property underlying the
-reduction to SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
+reduction to the SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
 
 The number of rejections during signature generation depends on four factors:
 
@@ -502,69 +515,87 @@ The number of rejections during signature generation depends on four factors:
 - when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed
 - the context string (see {{FIPS204}}, Section 5.2)
 
-As a result, some message-key combinations may lead to a higher number of rejection iterations
-than others.
+As a result, some message-key combinations may lead to a higher number of
+rejection iterations than others.
 
-Using Equation (5) from {{Li32}} and assuming a random bit generator (RBG) as specified in {{FIPS204}} (Section 3.6.1),
-the rejection probability during ML-DSA signing can be computed. These probabilities depend on
-the ML-DSA parameter set and are summarized below.
+Each signing attempt can be modeled as an independent Bernoulli trial: an attempt
+either succeeds or is rejected, with a fixed per-attempt acceptance probability.
+Under this assumption, the number of attempts until success follows a geometric
+distribution, and the expected number of attempts is the reciprocal of the
+acceptance probability.
 
-| ML-DSA Variant | Acceptance Probability |
-|----------------|------------------------|
-| ML-DSA-44      | 0.2350                 |
-| ML-DSA-65      | 0.1963                 |
-| ML-DSA-87      | 0.2596                 |
-{: #Acceptance_Probabilities title="Acceptance probability - per-attempt probability of successful signing for the given ML-DSA variant."}
+The values below are taken from {{KWI2026}}, assuming a random bit generator
+(RBG) as specified in {{FIPS204}} (Section 3.6.1).
 
-Each signing attempt can be modeled as an independent Bernoulli trial: an attempt either
-succeeds or is rejected, with a fixed per-attempt acceptance probability. Under this assumption,
-the number of attempts until success follows approximately a geometric distribution, under the
-heuristic assumptions of {{Li32}} Equation 5, and {{MLDSA_Sign_CDF}} reflects the
-CDF of this distribution. The expected number of signing iterations until a successful signature
-is generated is the reciprocal of the acceptance probability. Hence, if r denotes the per-iteration
-rejection probability and p = 1 - r the acceptance probability, then the expected number of signing
-iterations is 1/p. Using this model, the expected number of signing attempts for each ML-DSA variant
-is shown below.
+| ML-DSA Variant | Per-attempt Acceptance | Expected Number of Attempts |
+|----------------|------------------------|-----------------------------|
+| ML-DSA-44      | 0.2293                 | 4.361                       |
+| ML-DSA-65      | 0.1947                 | 5.137                       |
+| ML-DSA-87      | 0.2561                 | 3.905                       |
+{: #Expected_Attempts title="Per-attempt acceptance probability and expected number of attempts for the given ML-DSA variant."}
 
-| ML-DSA Variant | Expected Number of Attempts |
-|----------------|-----------------------------|
-| ML-DSA-44      | 4.255                       |
-| ML-DSA-65      | 5.094                       |
-| ML-DSA-87      | 3.852                       |
-{: #Expected_Attempts title="Expected Number of Attempts for the given ML-DSA variant."}
+{{MLDSA_Sign_CDF}} reflects the CDF of this distribution. The expected number of
+signing iterations until a successful signature is generated is the reciprocal of
+the acceptance probability, 1/p. Using this model, the expected number of signing
+ attempts for each ML-DSA variant is shown below.
 
-This model also allows computing the probability that the rejection-sampling loop completes
-within a given number of iterations. Specifically, the minimum number of iterations n required
-to achieve a desired completion probability can be computed as:
-n >= ln(1 - desired_probability) / ln(1 - p), where p is the per-iteration acceptance probability.
-For example, achieving a 99% probability of completing the signing process for ML-DSA-65 requires
-at most 21 iterations of the rejection-sampling loop.
+The cumulative distribution function (CDF) follows directly from the geometric
+model. The CDF expresses the probability that the signing process completes
+within at most a given number of iterations.
 
-Finally, based on these results, the cumulative distribution function (CDF) can be derived for
-each ML-DSA variant. The CDF expresses the probability that the signing process completes within
-at most a given number of iterations.
+| Iteration | ML-DSA-44 | ML-DSA-65 | ML-DSA-87 |
+|-----------|-----------|-----------|-----------|
+| 1         | 0.2293    | 0.1947    | 0.2561    |
+| 2         | 0.4060    | 0.3514    | 0.4466    |
+| 3         | 0.5423    | 0.4777    | 0.5883    |
+| 4         | 0.6472    | 0.5794    | 0.6937    |
+| 5         | 0.7281    | 0.6612    | 0.7722    |
+| 6         | 0.7905    | 0.7272    | 0.8305    |
+| 7         | 0.8385    | 0.7803    | 0.8739    |
+| 8         | 0.8755    | 0.8231    | 0.9062    |
+| 9         | 0.9041    | 0.8575    | 0.9302    |
+| 10        | 0.9261    | 0.8852    | 0.9481    |
+| 11        | 0.9430    | 0.9076    | 0.9614    |
+| 12        | 0.9561    | 0.9256    | 0.9713    |
+{: #MLDSA_Sign_CDF title="Probability of completing the signing process within the given number of iterations, for each ML-DSA variant."}
 
-| Iterations | ML-DSA-44           | ML-DSA-65           | ML-DSA-87           |
-|------------|---------------------|---------------------|---------------------|
-| 1          | 0.2350              | 0.1963              | 0.2596              |
-| 2          | 0.4148              | 0.3541              | 0.4518              |
-| 3          | 0.5523              | 0.4809              | 0.5941              |
-| 4          | 0.6575              | 0.5828              | 0.6995              |
-| 5          | 0.7380              | 0.6647              | 0.7775              |
-| 6          | 0.7996              | 0.7305              | 0.8353              |
-| 7          | 0.8467              | 0.7834              | 0.8780              |
-| 8          | 0.8827              | 0.8259              | 0.9097              |
-| 9          | 0.9103              | 0.8601              | 0.9331              |
-| 10         | 0.9314              | 0.8876              | 0.9505              |
-| 11         | 0.9475              | 0.9096              | 0.9634              |
-{: #MLDSA_Sign_CDF title="CDF values denote the probability of completing the signing process within the given number of iterations, for each ML-DSA variant."}
+Inverting the CDF gives the minimum number of iterations n required to reach a
+desired completion probability, n >= ln(1 - target) / ln(1 - p). This is the
+figure implementations need when budgeting for worst-case latency or energy
+rather than for the average case.
 
-{{MLDSA_Sign_CDF}} shows the cumulative probability of completing the signing process within
-a given number of iterations. These values follow directly from the geometric distribution of
-iteration counts, with per-attempt acceptance probabilities of approximately 20% to 26% (as shown in
-{{Acceptance_Probabilities}}) and expected iteration counts of roughly 4 to 5 (as shown in
-{{Expected_Attempts}}). After 11 iterations, each ML-DSA variant achieves over 90% probability
-of completing the signing process.
+| Target | ML-DSA-44 | ML-DSA-65 | ML-DSA-87 |
+|--------|-----------|-----------|-----------|
+| 90%    | 9         | 11        | 8         |
+| 95%    | 12        | 14        | 11        |
+| 99%    | 18        | 22        | 16        |
+{: #MLDSA_Sign_Quantiles title="Iterations required to reach a given probability of completing the signing process, for each ML-DSA variant."}
+
+Every variant reaches at least 90% within 11 iterations, but the tail is long:
+ML-DSA-65 needs 22 iterations for 99%, against an expected 5.1.
+
+Finally, {{FIPS204}} Appendix C provides guidance on bounding the signing
+loop, deriving a limit of 814 iterations for a failure probability of at most
+2^-256. That derivation uses the expected repetition counts from
+{{FIPS204}} Table 1. Applying the same method to the corrected counts above
+gives 820 (versus 821 of {{FIPS204_errata}}), and implementations that bound the loop should
+use that value instead. A limit of 814 is not unsafe - it corresponds to a failure
+probability of 2^-254.2 - but it is short of its stated target.
+
+{{FIPS204}} Appendix C bounds the signing loop at 814 iterations for a
+failure probability of at most 2^-256, based on the expected repetition
+counts in {{FIPS204}} Table 1. A more precise computation of these counts
+(see {{Expected_Attempts}}) gives 5.137 for ML-DSA-65, the parameter set
+with the highest repetition count, which yields a limit of 820 iterations;
+with 814, the probability that signing fails to complete is about
+2^-254.2, slightly short of the 2^-256 target. This does not affect the
+security of ML-DSA, as such a failure only requires signing to be
+retried. The FIPS 204 potential updates {{FIPS204_updates}} also conclude
+that 814 is too low, but compute the limit from the rounded count 5.14,
+giving 821.This is one iteration above the minimum derived here, so it
+also meets the 2^-256 target.For FIPS compliance, implementations that
+bound the loop should use the limit specified in {{FIPS204}}, or in a
+published update to it.
 
 ### Practical Implications for Constrained Cryptographic Modules
 
