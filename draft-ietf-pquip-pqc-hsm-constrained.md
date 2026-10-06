@@ -369,7 +369,7 @@ Both the ML-KEM and ML-DSA algorithms were selected for general use. Two optimiz
 
 The dominant source of memory usage in ML-DSA comes from holding the expanded matrix A and the associated polynomial vectors needed to compute the noisy affine transformation t = A\*s1 + s2, where A is a large public matrix derived from a seed, and t, s1, s2 are polynomial vectors involved in the signing process. The elements of those matrices and vectors are polynomials with integer coefficients modulo Q. ML-DSA uses a 23-bit long modulus Q, where in case of ML-KEM it is 12 bits, regardless of parametrization. Conversely, the sizes of those matrices depend on the parametrization of ML-KEM.
 
-To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 5x5, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 5\*5\*256\*2 = 12,800 bytes (approximately 12.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 5\*256\*2 = 2,560 bytes (approximately 2.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 12,800 + 3\*2,560 = 20,480 bytes (approximately 20 KB). Similar computation can be easily done for other instantiations of ML-KEM as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
+To compute memory requirements, we need to consider the dimensions of the public matrix A and the size of the polynomial vectors. Using ML-KEM-768 as an example, the public matrix A has dimensions 3x3, with each polynomial having 256 coefficients. Each coefficient is stored on 2 bytes (`uint16`), leading to a size of 3\*3\*256\*2 = 4,608 bytes (approximately 4.5 KB) for the matrix A alone. The polynomial vectors t, s1, and s2 also contribute significantly to memory usage, with each vector requiring 3\*256\*2 = 1,536 bytes (approximately 1.5 KB) each. Hence, for straightforward implementation, the minimal amount of memory required for these vectors is 4,608 + 3\*1,536 = 9,216 bytes (approximately 9 KB). Similar computation can be easily done for other instantiations of ML-KEM as well as ML-DSA. The ML-DSA has much higher memory requirements due to larger matrix and polynomial sizes (i.e. ML-DSA-87 requires approximately 79 KB of RAM during signing operations).
 
 It is worth noting that different cryptographic operations may have different memory requirements. For example, during ML-DSA verification, the memory usage is lower since the private key components are not needed.
 
@@ -379,7 +379,7 @@ The lazy expansion technique is an optimization that significantly reduces memor
 
 As an example, we can look at the computation of matrix-vector multiplication t=A\*s1. The matrix A is generated from a seed using a pseudo-random function (PRF), meaning that any element of A can be computed independently when needed. Similarly, the vector s1 is expanded from random seed and a nonce using a PRF.
 
-The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (2560 bytes) is 256\*2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (5\*256\* 2 = 2560 bytes) + one element of t (5\*2 = 10 bytes) need to be stored in memory at any time, leading to a total of approximately 3 KB of memory usage, compared to the approximately 20 KB required for a straightforward implementation. The savings are even more pronounced for bigger ML-DSA parameters, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
+The lazy expansion would first generate first element of a vector s1 (`s1(0)`) and then iterate over each row of matrix A in a first column. This approach generates partial result, that is a vector t. To finalize the computation of a vector t, the next element of s1 (`s1(1)`) is generated, and the process is repeated for each column of A until all elements of s1 have been processed. This method requires significantly less memory, in case of ML-KEM-768, size of element s1 (512 bytes) and a vector t (1536 bytes) is 256\*2 = 512 bytes, meaning that only 512 bytes + one row of matrix A (3\*256\* 2 = 1536 bytes) + the vector t (3\*256\*2 = 1536 bytes) need to be stored in memory at any time, leading to a total of approximately 3.5 KB of memory usage, compared to the approximately 9 KB required for a straightforward implementation. The savings are even more pronounced for bigger ML-DSA parameters, such as ML-DSA-87, where lazy expansion can reduce memory usage from approximately 79 KB to around 12 KB.
 
 With lazy expansion, the implementation differs slightly from the straightforward version. Also, in some cases, lazy expansion may introduce additional computational overhead. Notably, applying it to ML-DSA signing operation may require to recompute vector y ({{FIPS204}}, Algorithm 7, line 11) twice. In this case implementers need to weigh the trade-off between memory savings and additional computation.
 
@@ -440,7 +440,7 @@ Security Category 1 based on ~128-bit classical security, though this is not an 
 |       |                       | Signature        | 17088        |
 |   3   | LMS_SHA256_M24_H15_W4 | Public Key       | 48           |
 |       |                       | Private Key      | 44           |
-|       |                       | Signature        | 2004         |
+|       |                       | Signature        | 1620         |
 |   3   | XMSS-SHA2_10_192      | Public Key       | 48           |
 |       |                       | Private Key      | 104          |
 |       |                       | Signature        | 1492         |
@@ -456,7 +456,7 @@ Security Category 1 based on ~128-bit classical security, though this is not an 
 |       |                       | Signature        | 64           |
 {: #artifact-size title="Sizes of cryptographic artifacts"}
 
-Corresponding sizes for higher security categories will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}} for sizes for all parameter sets.
+Corresponding sizes for higher security categories will typically be larger - see {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, {{SP800-208}}, {{?RFC9858}} for sizes for all parameter sets.
 
 # Optimizing Performance in PQC Signature Schemes {#sig-perf}
 
@@ -473,10 +473,9 @@ better performance. This method is applicable for any PQC signature algorithm, w
 is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
 often provided to pre-hash or process the message in a way that avoids sending the entire
 raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
-their construction, which requires multiple passes over the message digest during the
-signing process. The signer does not retain the entire message or its full digest in
-memory at once. Instead, different parts of the message digest are processed sequentially
-during the signing procedure. This differs from traditional algorithms like RSA or ECDSA,
+their construction, which requires two passes over the message during the
+signing process. The signer must therefore either retain the message for the second pass
+or receive it twice. This differs from traditional algorithms like RSA or ECDSA,
 which allow for more efficient processing of the message, without requiring multiple
 passes or intermediate processing of the digest.
 
@@ -574,14 +573,6 @@ rather than for the average case.
 Every variant reaches at least 90% within 11 iterations, but the tail is long:
 ML-DSA-65 needs 22 iterations for 99%, against an expected 5.1.
 
-Finally, {{FIPS204}} Appendix C provides guidance on bounding the signing
-loop, deriving a limit of 814 iterations for a failure probability of at most
-2^-256. That derivation uses the expected repetition counts from
-{{FIPS204}} Table 1. Applying the same method to the corrected counts above
-gives 820 (versus 821 of {{FIPS204_errata}}), and implementations that bound the loop should
-use that value instead. A limit of 814 is not unsafe - it corresponds to a failure
-probability of 2^-254.2 - but it is short of its stated target.
-
 {{FIPS204}} Appendix C bounds the signing loop at 814 iterations for a
 failure probability of at most 2^-256, based on the expected repetition
 counts in {{FIPS204}} Table 1. A more precise computation of these counts
@@ -590,10 +581,10 @@ with the highest repetition count, which yields a limit of 820 iterations;
 with 814, the probability that signing fails to complete is about
 2^-254.2, slightly short of the 2^-256 target. This does not affect the
 security of ML-DSA, as such a failure only requires signing to be
-retried. The FIPS 204 potential updates {{FIPS204_updates}} also conclude
+retried. The FIPS 204 potential updates {{FIPS204_errata}} also conclude
 that 814 is too low, but compute the limit from the rounded count 5.14,
-giving 821.This is one iteration above the minimum derived here, so it
-also meets the 2^-256 target.For FIPS compliance, implementations that
+giving 821. This is one iteration above the minimum derived here, so it
+also meets the 2^-256 target. For FIPS compliance, implementations that
 bound the loop should use the limit specified in {{FIPS204}}, or in a
 published update to it.
 
