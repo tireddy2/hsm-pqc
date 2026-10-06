@@ -484,7 +484,7 @@ passes or intermediate processing of the digest.
 In constrained and battery-powered IoT devices that perform ML-DSA signing, the rejection-sampling
 loop introduces variability in signing latency and energy consumption due to the probabilistic
 nature of the signing process. While this results in a variable number of iterations in the signing
-algorithm, the expected number of retries for the standardized ML-DSA parameter sets is quantified
+algorithm, the expected number of attempts for the standardized ML-DSA parameter sets is quantified
 below.
 
 The analysis in this section follows the algorithmic structure and assumptions defined in
@@ -536,7 +536,7 @@ The values below are taken from {{KWI2026}}, assuming a random bit generator
 {{MLDSA_Sign_CDF}} reflects the CDF of this distribution. The expected number of
 signing iterations until a successful signature is generated is the reciprocal of
 the acceptance probability, 1/p. Using this model, the expected number of signing
- attempts for each ML-DSA variant is shown below.
+ attempts for each ML-DSA variant is shown above.
 
 The cumulative distribution function (CDF) follows directly from the geometric
 model. The CDF expresses the probability that the signing process completes
