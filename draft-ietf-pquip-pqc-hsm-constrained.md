@@ -508,12 +508,11 @@ Second, it ensures that the distribution of valid signatures is statistically cl
 distribution assumed in the security reduction, namely the zero-knowledge property underlying the
 reduction to the SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
 
-The number of rejections during signature generation depends on four factors:
+The number of rejections during signature generation depends on:
 
-- the message (i.e., the value of &mu;)
-- the secret key material
-- when hedged signing is used (see {{FIPS204}}, Section 3.4), the random seed
-- the context string (see {{FIPS204}}, Section 5.2)
+- the secret key
+- the signing input: either the message and context string (see {{FIPS204}}, Section 5.2), or &mu; when External&mu;-ML-DSA is used
+- the random seed, when hedged signing is used (see {{FIPS204}}, Section 3.4)
 
 As a result, some message-key combinations may lead to a higher number of
 rejection iterations than others.
