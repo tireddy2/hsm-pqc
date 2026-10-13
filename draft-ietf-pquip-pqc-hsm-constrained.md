@@ -54,11 +54,11 @@ author:
     email: "kris@amongbytes.com"
 
 normative:
-
-informative:
   FIPS203: DOI.10.6028/NIST.FIPS.203
   FIPS204: DOI.10.6028/NIST.FIPS.204
   FIPS205: DOI.10.6028/NIST.FIPS.205
+
+informative:
   SP800-208: DOI.10.6028/NIST.SP.800-208
   ISO19790:
     title: "Information security, cybersecurity, and privacy protection - Security requirements for cryptographic modules"
@@ -210,7 +210,7 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}.
 - Stateless Hash-Based Digital Signature Algorithm (SLH-DSA) {{FIPS205}}.
 
-- Hierarchical Signature System/Leighton-Micali Signature (HSS/LMS) {{?RFC8554}}, and the related eXtended Merkle Signature Scheme (XMSS) {{?RFC8391}}.
+- Hierarchical Signature System/Leighton-Micali Signature (HSS/LMS) {{!RFC8554}}, and the related eXtended Merkle Signature Scheme (XMSS) {{!RFC8391}}.
 
 Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
 
@@ -323,7 +323,7 @@ quantum computer" (CRQC) is available. To mitigate this threat, the secure chann
 
 #### Export of Encrypted Seeds and Private Keys {#encrypted-export}
 
-In more common constrained device scenarios for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES Key Wrap with Padding ({{!RFC5649}}), should be used to encrypt the seed or private key before export. {{!RFC5649}} adds padding to handle key material whose length is not a multiple of 8 octets, such as an expanded private key that does not fall on that boundary.
+In more common constrained device scenarios for secure exporting of seeds and private keys, a strong symmetric encryption algorithm, such as AES Key Wrap with Padding ({{?RFC5649}}), should be used to encrypt the seed or private key before export. {{?RFC5649}} adds padding to handle key material whose length is not a multiple of 8 octets, such as an expanded private key that does not fall on that boundary.
 
 Operationally, the exported data and the symmetric key used for encryption must both be protected against unauthorized access or modification.
 
@@ -683,11 +683,11 @@ and distribute malicious updates.
 ## Post-Quantum Firmware Authentication
 
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
-These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{!RFC9019}}.
+These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{?RFC9019}}.
 
-{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{?RFC8554}} to secure software updates. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{!RFC8554}} to secure software updates. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
 
-Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{?RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
+Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{!RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been used, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier.
@@ -739,4 +739,4 @@ ML-DSA supports both deterministic and hedged signing. On platforms where side-c
 
 # Acknowledgments
 
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig and Aritra Banerjee for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig, Aritra Banerjee and Mohamed Boucadair for the detailed review.
