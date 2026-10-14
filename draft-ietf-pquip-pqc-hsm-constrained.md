@@ -155,8 +155,8 @@ informative:
       - org: IEEE
     date: 2018
   KWI2026:
-   title: "The Rejection Rate of ML-DSA Signing: Correcting FIPS-204"
-   target: https://amongbytes.com/posts/rejection-rate-of-mldsa-signing
+   title: "On the Expected Number of Iterations in ML-DSA Signing: A Complete Accounting of the Rejection Conditions"
+   target: https://eprint.iacr.org/2026/2456
    author:
      - ins: K. Kwiatkowski
    date: October 2026
