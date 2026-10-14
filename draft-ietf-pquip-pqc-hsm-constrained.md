@@ -111,7 +111,7 @@ informative:
      date: December 2022
   REC-KEM: DOI.10.6028/NIST.SP.800-227
   Lyu09: DOI.10.1007/978-3-642-10366-7_35
-  Li32:
+  Dilithium:
      title: "CRYSTALS-Dilithium: Algorithm Specifications and Supporting Documentation (Version 3.1)"
      target: https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
      author:
@@ -124,6 +124,12 @@ informative:
      - ins: G. Seiler
      - ins: D. Stehle
      date: February 2021
+  PKCS11:
+    title: "PKCS #11 Specification Version 3.2"
+    target: https://docs.oasis-open.org/pkcs11/pkcs11-spec/v3.2/os/
+    author:
+      - org: OASIS
+    date: June 2026
   NISTSecurityCategories:
     title: "Post-Quantum Cryptography: Security (Evaluation Criteria)"
     target: https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
@@ -197,6 +203,11 @@ constrained platforms.
 Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
 As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
+In this document, "constrained" covers two related cases: constrained devices in the sense of
+{{?RFC7228}}, and cryptographic modules (for example, secure elements, TPMs, and small hardware
+security modules) with limited RAM, storage, or processing capacity, which may be embedded in
+hosts that are not themselves constrained.
+
 This document provides guidance and best practices for integrating PQC algorithms into
 constrained devices. It reviews strategies for key storage, ephemeral key management,
 and performance optimization tailored to low-resource environments. The document also
@@ -262,7 +273,7 @@ solely to the firmware signer, and key generation is performed on the signer's i
 rather than on the device. Consequently, SLH-DSA key generation cost does not impact device
 performance. However, in scenarios where the device generates its own SLH-DSA key pairs, the
 higher key generation cost may influence seed-storage design decisions and depend on performance
-considerations or standards compliance (e.g., PKCS#11).
+considerations or standards compliance (e.g., {{PKCS11}}).
 
    While vulnerabilities like the "Unbindable Kemmy Schmidt" misbinding attack {{BIND}} demonstrate
 the risks of manipulating expanded private keys in environments lacking hardware-backed
@@ -282,7 +293,8 @@ a mismatch between the key format used internally (seed-based) and the expanded 
 key. This issue arises because the internal format is designed for efficient key storage
 by deriving the private key from the seed, while the expanded private key is already fully
 computed. As NIST has not defined a single private key format for PQC algorithms, this
-creates a potential gap in interoperability.
+creates a potential gap in interoperability. To address this, the private key formats for
+ML-DSA {{?RFC9881}} and ML-KEM {{?RFC9935}} recommend retaining and exporting the seed.
 
 ### Efficient Key Derivation
 
@@ -506,7 +518,7 @@ The purpose of rejection sampling is twofold: First, it prevents leakage of info
 secret key through out-of-range values that could otherwise bias the distribution of signatures.
 Second, it ensures that the distribution of valid signatures is statistically close to the ideal
 distribution assumed in the security reduction, namely the zero-knowledge property underlying the
-reduction to the SelfTargetMSIS problem (see Section 6.2.1 of {{Li32}}).
+reduction to the SelfTargetMSIS problem (see Section 6.2.1 of {{Dilithium}}).
 
 The number of rejections during signature generation depends on three factors:
 
@@ -596,10 +608,6 @@ capability and may require additional consideration.
 As discussed in {{Seed}}, in many deployment scenarios, constrained devices primarily perform signature verification, while signature generation is performed on more capable systems (e.g., firmware signing infrastructure). Therefore, the impact of rejection sampling is primarily relevant for devices that perform ML-DSA signing.
 
 Devices that only verify signatures are not affected, as those operations do not involve rejection sampling and have deterministic execution times.
-
-In firmware update and secure boot scenarios, signature verification is typically performed during early boot stages, where the bootloader has exclusive access to system resources. In such environments, the practical impact of resource constraints on signature verification is reduced compared to general runtime environments.
-
-Verification does not always occur during early boot. In devices that keep a second firmware image and switch to it only after verifying it, the new image is verified while the current firmware runs, so verification competes with the device's normal workload for CPU, RAM, and energy. The optimizations in {{sig-mem}} and {{sig-perf}} are therefore especially relevant when verification runs concurrently with normal operation.
 
 ### Suggestions for benchmarking ML-DSA Signing Performance
 
@@ -691,7 +699,7 @@ Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{!RF
 Their security is based on the security of the underlying hash function, which is well-understood.
 A major downside of stateful hash-based signatures is the requirement to keep track of which One-Time Signature (OTS) keys have been used, since reuse of a single OTS key allows for signature forgeries.
 However, in the case of firmware updates, the OTS keys will be signing versioned updates, which may make state management easier.
-{{?I-D.ietf-pquip-hbs-state}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
+{{?RFC10033}} discusses various strategies for a correct state and backup management for stateful hash-based signatures.
 
 Other post-quantum signature algorithms may also be viable for firmware signing:
 
@@ -706,6 +714,10 @@ It is more performant than SLH-DSA, with significantly faster signing and verifi
 This will make it possible to implement on a wider range of constrained devices.
 The mathematical problem underpinning ML-DSA, Module Learning With Errors (M-LWE), is believed to be a hard problem by the cryptographic community, and hence ML-DSA is believed to be secure.
 Cryptographers are more confident still in the security of hash-based signatures than M-LWE, so developers may wish to factor that in when choosing a firmware signing algorithm.
+
+In firmware update and secure boot scenarios, signature verification is typically performed during early boot stages, where the bootloader has exclusive access to system resources. In such environments, the practical impact of resource constraints on signature verification is reduced compared to general runtime environments.
+
+Verification does not always occur during early boot. In devices that keep a second firmware image and switch to it only after verifying it, the new image is verified while the current firmware runs, so verification competes with the device's normal workload for CPU, RAM, and energy. The optimizations in {{sig-mem}} and {{sig-perf}} are therefore especially relevant when verification runs concurrently with normal operation.
 
 ## Hybrid Signature Approaches
 
