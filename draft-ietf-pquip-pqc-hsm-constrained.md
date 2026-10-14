@@ -204,7 +204,7 @@ Constrained devices are often deployed as clients initiating outbound connection
 As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
 In this document, "constrained" covers two related cases: constrained devices in the sense of
-{{?RFC7228}}, and cryptographic modules (for example, secure elements, TPMs, and small hardware
+{{?I-D.ietf-iotops-7228bis}}, and cryptographic modules (for example, secure elements, TPMs, and small hardware
 security modules) with limited RAM, storage, or processing capacity, which may be embedded in
 hosts that are not themselves constrained.
 
