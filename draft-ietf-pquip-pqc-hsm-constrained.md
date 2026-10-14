@@ -751,4 +751,4 @@ ML-DSA supports both deterministic and hedged signing. On platforms where side-c
 
 # Acknowledgments
 
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig, Aritra Banerjee and Mohamed Boucadair for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig, Aritra Banerjee, Mohamed Boucadair and Ketan Talaulikar for the detailed review.
