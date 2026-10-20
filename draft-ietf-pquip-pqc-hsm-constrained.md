@@ -225,7 +225,7 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 
 Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
 
-- The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, though current specifications require the use of floating point arithmetic which may make it challenging to implement on some devices.
+- The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, which makes it appealing for constrained devices. However, its reliance on Gaussian sampling makes it difficult to implement correctly and to validate against implementation attacks. A revised specification is awaited at the time of writing.
 - The HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is expected to be less performant than ML-KEM.
 - Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardised in future, which may make use of SLH-DSA more palatable on constrained devices.
 
@@ -743,6 +743,8 @@ module. Secure export and backup mechanisms for seeds are essential to ensure re
 case of hardware failure, but the exported seeds must be encrypted and protected from
 unauthorized access.
 
+Key generation, encapsulation, and hedged signing require random values suitable for cryptographic use. An inadequate random bit generator (RBG) can allow an attacker to recover a private key by searching a small set of possibilities rather than the whole key space. Implementations should meet the RBG requirements in {{FIPS203}}, {{FIPS204}}, {{FIPS205}}, and {{SP800-208}}.
+
 ## Side Channel Protection
 
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, they are a major concern in secure hardware design and must not be overlooked. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
@@ -751,4 +753,4 @@ ML-DSA supports both deterministic and hedged signing. On platforms where side-c
 
 # Acknowledgments
 
-Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig, Aritra Banerjee, Mohamed Boucadair and Ketan Talaulikar for the detailed review.
+Thanks to Jean-Pierre Fiset, Richard Kettlewell, Mike Ounsworth, Russ Housley, Keegan Dasilva Barbosa, Hannes Tschofenig, Aritra Banerjee, Mohamed Boucadair, Ketan Talaulikar and Ionuț Mihalcea for the detailed review.
