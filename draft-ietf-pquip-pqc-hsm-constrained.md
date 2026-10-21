@@ -223,11 +223,11 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 
 - Hierarchical Signature System/Leighton-Micali Signature (HSS/LMS) {{!RFC8554}}, and the related eXtended Merkle Signature Scheme (XMSS) {{!RFC8391}}.
 
-Additional post-quantum algorithms are expected to be standardised in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardised), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
+Additional post-quantum algorithms are expected to be standardized in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardized), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
 
 - The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, which makes it appealing for constrained devices. However, its reliance on Gaussian sampling makes it difficult to implement correctly and to validate against implementation attacks. A revised specification is awaited at the time of writing.
 - The HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is expected to be less performant than ML-KEM.
-- Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardised in future, which may make use of SLH-DSA more palatable on constrained devices.
+- Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardized in future, which may make use of SLH-DSA more palatable on constrained devices.
 
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
 Actual protocol behaviour is defined in other documents.
@@ -416,6 +416,11 @@ External&mu;-ML-DSA.Sign in a hardware cryptographic module, the cryptographic w
 is efficiently distributed, making it practical for high-volume signing operations even
 in memory-constrained cryptographic modules.
 
+As with any pre-hashing scheme, this shifts trust to whatever component computes the digest:
+the signing module never sees the original message, so it must trust that &mu; was faithfully
+computed over the intended message. A compromised pre-hashing component could substitute &mu;
+for a different message without the signing module detecting it.
+
 The main advantage of this method is that, unlike HashML-DSA, the External&mu;-ML-DSA approach
 is interoperable with the standard version of ML-DSA that does not use pre-hashing. This means
 a message can be signed using ML-DSA.Sign, and the verifier can independently compute &mu; and use
@@ -482,10 +487,9 @@ transmitted to the cryptographic module, thereby improving efficiency and scalab
 One effective approach involves sending only a message digest to the cryptographic module
 for signing. By signing the digest of the content rather than the entire content, the
 communication between the application and the cryptographic module is minimized, enabling
-better performance. This method is applicable for any PQC signature algorithm, whether it
-is ML-DSA, SLH-DSA, or any future signature scheme. For such algorithms, a mechanism is
-often provided to pre-hash or process the message in a way that avoids sending the entire
-raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
+better performance. This method is applicable for both ML-DSA and SLH-DSA. For such algorithms,
+a mechanism is often provided to pre-hash or process the message in a way that avoids sending
+the entire raw message for signing. In particular, algorithms like SLH-DSA present challenges due to
 their construction, which requires two passes over the message during the
 signing process. The signer must therefore either retain the message for the second pass
 or receive it twice. This differs from traditional algorithms like RSA or ECDSA,
@@ -693,7 +697,7 @@ and distribute malicious updates.
 To ensure the integrity and authenticity of firmware updates, constrained devices will have to adopt PQC digital signature schemes for code signing.
 These algorithms must provide long-term security, operate efficiently in low-resource environments, and be compatible with secure update mechanisms, such as the firmware update architecture for IoT described in {{?RFC9019}}.
 
-{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{!RFC8554}} to secure software updates. The SUIT working group may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
+{{?I-D.ietf-suit-mti}} defines mandatory-to-implement cryptographic algorithms for IoT devices, and recommends use of HSS/LMS {{!RFC8554}} to secure software updates. The IETF working groups may consider adding post-quantum algorithms, such as SLH-DSA and ML-DSA, in future specifications.
 
 Stateful hash-based signature schemes, such as HSS/LMS or the similar XMSS {{!RFC8391}}, are good candidates for signing firmware updates. Those schemes offer efficient verification times, making them more practical choices for constrained environments where performance and memory usage are key concerns.
 Their security is based on the security of the underlying hash function, which is well-understood.
