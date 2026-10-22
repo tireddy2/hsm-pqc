@@ -419,7 +419,7 @@ in memory-constrained cryptographic modules.
 As with any pre-hashing scheme, this shifts trust to whatever component computes the digest:
 the signing module never sees the original message, so it must trust that &mu; was faithfully
 computed over the intended message. A compromised pre-hashing component could substitute &mu;
-for a different message without the signing module detecting it.
+for a different message without the signing module detecting the substitution.
 
 The main advantage of this method is that, unlike HashML-DSA, the External&mu;-ML-DSA approach
 is interoperable with the standard version of ML-DSA that does not use pre-hashing. This means
