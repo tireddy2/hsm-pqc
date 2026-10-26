@@ -295,6 +295,8 @@ by deriving the private key from the seed, while the expanded private key is alr
 computed. As NIST has not defined a single private key format for PQC algorithms, this
 creates a potential gap in interoperability. To address this, the private key formats for
 ML-DSA {{?RFC9881}} and ML-KEM {{?RFC9935}} recommend retaining and exporting the seed.
+When an imported private key contains both the seed and the expanded key, the
+consistency check in Section 8.2 of {{?RFC9881}} or Section 8 of {{?RFC9935}} applies.
 
 ### Efficient Key Derivation
 
@@ -753,7 +755,7 @@ Key generation, encapsulation, and hedged signing require random values suitable
 
 Side-channel attacks exploit physical leaks during cryptographic operations, such as timing information, power consumption, electromagnetic emissions, or other physical characteristics, to extract sensitive data like private keys or seeds. Given the sensitivity of the seed and private key in PQC key generation, it is critical to consider side-channel protection in cryptographic module design. While side-channel attacks remain an active research topic, they are a major concern in secure hardware design and must not be overlooked. Cryptographic modules must incorporate strong countermeasures against side-channel vulnerabilities to prevent attackers from gaining insights into secret data during cryptographic operations.
 
-ML-DSA supports both deterministic and hedged signing. On platforms where side-channel attacks are a concern and cannot be otherwise mitigated, hedged signing should be used, as discussed in Section 3.4 of {{FIPS204}}.
+ML-DSA and SLH-DSA support both deterministic and hedged signing. On platforms where side-channel attacks are a concern and cannot be otherwise mitigated, hedged signing should be used, as discussed in Section 3.4 of {{FIPS204}} and Section 9.2 of {{FIPS205}}.
 
 # Acknowledgments
 
