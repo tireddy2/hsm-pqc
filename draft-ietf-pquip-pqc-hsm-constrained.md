@@ -437,6 +437,10 @@ cryptographic algorithms. This increase in size is a significant consideration f
 constrained devices, which often have limited memory and storage capacity. For example,
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
+Larger public keys, ciphertexts, and signatures also increase the data transmitted, which affects
+devices on low-power, low-bandwidth links, particularly multi-hop mesh networks, where fragmentation
+and retransmission add latency and energy cost. Algorithm selection for such environments is left
+to the relevant protocol specifications.
 
 {{artifact-size}} presents artifact sizes organized by NIST security categories published in
 the initial call for proposals {{NISTSecurityCategories}}. The security categories are defined
