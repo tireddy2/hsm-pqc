@@ -208,12 +208,7 @@ In this document, "constrained" covers two related cases: constrained devices in
 security modules) with limited RAM, storage, or processing capacity, which may be embedded in
 hosts that are not themselves constrained.
 
-This document provides guidance and best practices for integrating PQC algorithms into
-constrained devices. It reviews strategies for key storage, ephemeral key management,
-and performance optimization tailored to low-resource environments. The document also
-examines ephemeral key generation in protocols such as TLS, along with techniques to
-optimize PQC signature operations to improve performance within constrained cryptographic
-modules.
+This document provides guidance and best practices for integrating Post-Quantum Cryptography (PQC) algorithms into constrained devices. It reviews strategies for key storage, ephemeral key management, and performance optimization tailored to low-resource environments. The document also examines ephemeral key generation in protocols such as TLS, along with techniques to optimize PQC signature operations within constrained cryptographic modules. It is intended for implementers of Hardware Security Modules (HSMs), microcontroller units (MCUs), and secure elements who choose parameter sets, manage memory and stack usage, store keys compactly (e.g., as seeds), and weigh side-channel and latency trade-offs.
 
 This document focuses on PQC algorithms standardized by NIST or specified by the IRTF CFRG, and that have corresponding IETF protocol specifications, either published as RFCs or progressing through the IETF standards process. Specifically, it covers the following algorithms:
 
@@ -226,7 +221,7 @@ This document focuses on PQC algorithms standardized by NIST or specified by the
 Additional post-quantum algorithms are expected to be standardized in future, which may also prove suitable for use in constrained devices. Since algorithms may change prior to standardisation (or may end up unstandardized), no concrete guidance is provided on these here, but future specifications may provide guidance on the following algorithms:
 
 - The Falcon signature scheme {{Falcon}} has shorter keys and signatures than ML-DSA, which makes it appealing for constrained devices. However, its reliance on Gaussian sampling makes it difficult to implement correctly and to validate against implementation attacks. A revised specification is awaited at the time of writing.
-- The HQC KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is expected to be less performant than ML-KEM.
+- The HQC-KEM {{HQC}} is a code-based KEM, so offers algorithmic diversity to complement lattice-based KEMs, though it is expected to be less performant than ML-KEM.
 - Smaller SLH-DSA parameter sets {{Smaller-SPHINCS}} may be standardized in future, which may make use of SLH-DSA more palatable on constrained devices.
 
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
