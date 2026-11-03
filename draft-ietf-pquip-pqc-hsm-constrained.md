@@ -60,6 +60,7 @@ normative:
 
 informative:
   SP800-208: DOI.10.6028/NIST.SP.800-208
+  FIPS202: DOI.10.6028/NIST.FIPS.202
   ISO19790:
     title: "Information security, cybersecurity, and privacy protection - Security requirements for cryptographic modules"
     target: https://www.iso.org/standard/82423.html
@@ -203,14 +204,17 @@ constrained platforms.
 Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
 As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
-In this document, "constrained" covers two related cases: constrained devices in the sense of
-{{?I-D.ietf-iotops-7228bis}}, and cryptographic modules (for example, secure elements, TPMs, and small hardware
-security modules) with limited RAM, storage, or processing capacity, which may be embedded in
-hosts that are not themselves constrained.
+In this document, "constrained device" is used as an umbrella term for two related cases:
+
+- constrained nodes, as defined in {{!I-D.ietf-iotops-7228bis}}. This document primarily targets Class 1 and Class 2 devices and larger. Class 0 devices generally lack the RAM and storage needed for the algorithms covered here, and would typically need to offload PQC operations to a dedicated cryptographic module.
+
+- constrained cryptographic modules with limited RAM, storage, or processing capacity, which may be embedded in hosts that are not themselves constrained.
+
+{{key-management}}, {{sig-mem}} and {{sig-perf}} apply mainly to constrained cryptographic modules, while {{sec-key-sizes}}, {{additional-considerations}} and {{firmware}} apply to constrained nodes as a whole.
 
 This document provides guidance and best practices for integrating PQC algorithms into constrained devices. It reviews strategies for key storage, ephemeral key management, and performance optimization tailored to low-resource environments. The document also examines ephemeral key generation in protocols such as TLS, along with techniques to optimize PQC signature operations within constrained cryptographic modules. It is intended for implementers of the constrained devices and cryptographic modules described above. It is also intended for vendors that integrate such modules from third parties, to help them determine which capabilities and optimizations to require from their suppliers.
 
-This document focuses on PQC algorithms standardized by NIST or specified by the IRTF CFRG, and that have corresponding IETF protocol specifications, either published as RFCs or progressing through the IETF standards process. Specifically, it covers the following algorithms:
+This document focuses on PQC algorithms standardized by the US National Institute of Standards and Technology (NIST) or specified by the IRTF CFRG, and that have corresponding IETF protocol specifications, either published as RFCs or progressing through the IETF standards process. Specifically, it covers the following algorithms:
 
 - Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 - Module-Lattice-Based Digital Signature Algorithm (ML-DSA) {{FIPS204}}.
@@ -227,7 +231,7 @@ Additional post-quantum algorithms are expected to be standardized in future, wh
 This document focuses on device-level adaptations and considerations necessary to implement PQC efficiently on constrained devices.
 Actual protocol behaviour is defined in other documents.
 
-# Key Management in Constrained Devices for PQC
+# Key Management in Constrained Devices for PQC {#key-management}
 
 The embedded cryptographic components used in constrained devices are designed to securely manage cryptographic keys, often under strict limitations in RAM, flash memory, and computational resources. These limitations are further exacerbated by the increased key sizes and computational demands of PQC algorithms.
 
@@ -258,10 +262,10 @@ prefer storing the full expanded key to reduce computational overhead during key
    The choice between storing the seed or the expanded private key has direct
 implications on performance, as key derivation incurs additional computation. The impact
 of this overhead varies depending on the algorithm. For instance, ML-DSA key generation,
-which primarily involves polynomial operations using the Number Theoretic Transform (NTT)
+which primarily involves polynomial operations using the Number Theoretic Transform (NTT) (see Section 7.5 of {{FIPS204}} and Section 4.3 of {{FIPS203}})
 and hashing, is computationally efficient compared to other post-quantum schemes. In contrast,
 SLH-DSA key generation requires constructing a Merkle tree and multiple Winternitz One-Time
-Signature (WOTS+) key generations, making it significantly more computationally intensive. In
+Signature (WOTS+) (see Section 5 of {{FIPS205}}) key generations, making it significantly more computationally intensive. In
 many embedded deployments, SLH-DSA is expected to be used primarily for firmware verification.
 In this case the device holds only the SLH-DSA public key; the corresponding private key is known
 solely to the firmware signer, and key generation is performed on the signer's infrastructure
@@ -387,7 +391,7 @@ It is worth noting that different cryptographic operations may have different me
 
 The lazy expansion technique is an optimization that significantly reduces memory usage by avoiding the need to store the entire expanded matrix A in memory at once. Instead of pre-computing and storing the full matrix, lazy expansion generates parts of it on-the-fly as needed for the process. This approach leverages the fact that not all elements of the matrix are required simultaneously, allowing for a more efficient use of memory.
 
-As an example, we can look at the computation of matrix-vector multiplication t=A\*s. The matrix A is generated from a seed using an extendable-output function (XOF), meaning that any element of A can be computed independently when needed. Similarly, the vector s is expanded from a random seed and a nonce using a pseudo-random function (PRF).
+As an example, consider the computation of matrix-vector multiplication t=A\*s. The matrix A is generated from a seed using an extendable-output function (XOF) {{FIPS202}}, meaning that any element of A can be computed independently when needed. Similarly, the vector s is expanded from a random seed and a nonce using a pseudo-random function (PRF).
 
 Lazy expansion first initializes t with e, which can be generated directly into the t buffer. It then generates the first element of the vector s (`s(0)`), iterates over the rows of the first column of A, generates one element at a time and accumulates the products into t. It next generates `s(1)` and repeats the process for the next column, until all elements of s have been processed. For ML-KEM-768, each polynomial takes 512 bytes (256 coefficients of 2 bytes each), so only one element of s (512 bytes), one element of A (512 bytes) and the vector t (3\*512 = 1,536 bytes) need to be held in memory at any time, about 2.5 KB in total compared to approximately 9 KB for a straightforward implementation. The savings are even more pronounced for ML-DSA, where combining lazy expansion with keeping the private-key vectors in packed form reduces the memory required for signing from at least 79 KB to a small fraction of that; see {{Gre20}} and {{BosRS22}} for measured figures.
 
@@ -650,7 +654,7 @@ combinations that result in the target iteration counts, e.g., a single iteratio
 expected count rounded to the nearest integer for the average case, and a high quantile such as the 99% value
 from {{MLDSA_Sign_Quantiles}} for the worst case.
 
-# Additional Considerations for PQC Use in Constrained Devices
+# Additional Considerations for PQC Use in Constrained Devices {#additional-considerations}
 
 ## Key Rotation and Renewal
 
@@ -678,7 +682,7 @@ management policies. This includes the ability to:
 
 - Reconfigure cryptographic profile of the device via firmware updates.
 
-# Post-quantum Firmware Upgrades for Constrained Devices
+# Post-quantum Firmware Upgrades for Constrained Devices {#firmware}
 
 Constrained devices deployed in the field require periodic firmware upgrades to patch
 security vulnerabilities, introduce new cryptographic algorithms, and improve overall
