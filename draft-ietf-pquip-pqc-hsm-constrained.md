@@ -269,7 +269,7 @@ of this overhead varies depending on the algorithm. For instance, ML-DSA key gen
 which primarily involves polynomial operations using the Number Theoretic Transform (NTT) (see Section 7.5 of {{FIPS204}} and Section 4.3 of {{FIPS203}})
 and hashing, is computationally efficient compared to other post-quantum schemes. In contrast,
 SLH-DSA key generation requires constructing a Merkle tree and multiple Winternitz One-Time
-Signature (WOTS+) (see Section 5 of {{FIPS205}}) key generations, making it significantly more computationally intensive. In
+Signature (WOTS+) key generations (see Section 5 of {{FIPS205}}), making it significantly more computationally intensive. In
 many embedded deployments, SLH-DSA is expected to be used primarily for firmware verification.
 In this case the device holds only the SLH-DSA public key; the corresponding private key is known
 solely to the firmware signer, and key generation is performed on the signer's infrastructure
