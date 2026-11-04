@@ -208,7 +208,7 @@ As a result, designers may need to consider PQC to address confidentiality, both
 
 In this document, "constrained device" is used as an umbrella term for two related cases:
 
-- constrained nodes, as defined in {{!I-D.ietf-iotops-7228bis}}. This document primarily targets Class 1 and Class 2 devices and larger. Class 0 devices generally lack the RAM and storage needed for the algorithms covered here, and would typically need to offload PQC operations to a dedicated cryptographic module.
+- constrained nodes, as defined in {{?I-D.ietf-iotops-7228bis}}. This document primarily targets Class 1 devices and above. Class 0 devices generally lack the RAM and storage needed for the algorithms covered here, and would typically need to offload PQC operations to a dedicated cryptographic module.
 
 - constrained cryptographic modules with limited RAM, storage, or processing capacity, which may be embedded in hosts that are not themselves constrained.
 
