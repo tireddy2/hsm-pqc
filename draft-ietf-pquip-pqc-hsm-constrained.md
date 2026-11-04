@@ -201,6 +201,8 @@ sizes and, in some cases, higher computational demands. Consequently, the migrat
 PQC requires careful planning to ensure secure and efficient key management within
 constrained platforms.
 
+PQC also affects constrained networks. Public keys, ciphertexts and signatures are one to two orders of magnitude larger than their elliptic-curve counterparts (see {{sec-key-sizes}}). On links with small frames, such as IEEE 802.15.4 with a 127-byte MTU, most PQC public keys, ciphertexts and signatures require fragmentation across many frames, increasing latency, energy use and exposure to loss, particularly in multi-hop mesh networks. This document does not specify protocol behaviour or algorithm selection for such networks and leaves this to the relevant protocol specifications.
+
 Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
 As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
 
@@ -302,8 +304,9 @@ consistency check in Section 8.2 of {{?RFC9881}} or Section 8 of {{?RFC9935}} ap
    When storing only the seed in a constrained cryptographic module, it is crucial that
 the device is capable of deriving the private key efficiently whenever required. However,
 repeatedly re-deriving the private key for every
-cryptographic operation may introduce significant performance overhead. In scenarios where
-performance is a critical consideration, it may be more efficient to store the expanded
+cryptographic operation adds computation to each operation, increasing CPU time and therefore
+latency and energy consumption, which can be problematic for battery-powered devices. In scenarios
+where these costs are critical, it may be more efficient to store the expanded
 private key directly (in addition to the seed). Implementations may choose to
 retain (cache) several recently-used or frequently-used private keys to avoid the computational
 overhead and delay of deriving private keys from their seeds for each operation.
