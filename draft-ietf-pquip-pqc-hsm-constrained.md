@@ -216,6 +216,8 @@ In this document, "constrained device" is used as an umbrella term for two relat
 
 This document provides guidance and best practices for integrating PQC algorithms into constrained devices. It reviews strategies for key storage, ephemeral key management, and performance optimization tailored to low-resource environments. The document also examines ephemeral key generation in protocols such as TLS, along with techniques to optimize PQC signature operations within constrained cryptographic modules. It is intended for implementers of the constrained devices and cryptographic modules described above. It is also intended for vendors that integrate such modules from third parties, to help them determine which capabilities and optimizations to require from their suppliers.
 
+The techniques described in this document have been used in implementations on ARM Cortex-M class microcontrollers and cryptographic modules, and the guidance is based on published implementation results referenced in the relevant sections. It is informational: it describes techniques and trade-offs, not requirements. Actual feasibility depends on the target platform and should be validated on it.
+
 This document focuses on PQC algorithms standardized by the US National Institute of Standards and Technology (NIST) or specified by the IRTF CFRG, and that have corresponding IETF protocol specifications, either published as RFCs or progressing through the IETF standards process. Specifically, it covers the following algorithms:
 
 - Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
