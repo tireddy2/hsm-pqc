@@ -201,7 +201,7 @@ sizes and, in some cases, higher computational demands. Consequently, the migrat
 PQC requires careful planning to ensure secure and efficient key management within
 constrained platforms.
 
-PQC also affects constrained networks. Public keys, ciphertexts and signatures are one to two orders of magnitude larger than their elliptic-curve counterparts (see {{sec-key-sizes}}). On links with small frames, such as IEEE 802.15.4 with a 127-byte MTU, most PQC public keys, ciphertexts and signatures require fragmentation across many frames, increasing latency, energy use and exposure to loss, particularly in multi-hop mesh networks. This document does not specify protocol behaviour or algorithm selection for such networks and leaves this to the relevant protocol specifications.
+This document does not specify protocol behaviour or algorithm selection for constrained networks and leaves this to the relevant protocol specifications. Some PQC schemes covered in this document have public keys, ciphertexts or signatures one to two orders of magnitude larger than their elliptic-curve counterparts (see {{sec-key-sizes}}). On links with small frames, such as IEEE 802.15.4, sending those artifacts requires fragmentation across many frames, which increases latency, energy consumption and exposure to loss, particularly in multi-hop mesh networks.
 
 Constrained devices are often deployed as clients initiating outbound connections, but some also act in server roles or enforce local authentication policies.
 As a result, designers may need to consider PQC to address confidentiality, both outbound and inbound authentication, and signature verification used in secure boot, firmware updates, and device attestation.
@@ -441,10 +441,6 @@ cryptographic algorithms. This increase in size is a significant consideration f
 constrained devices, which often have limited memory and storage capacity. For example,
 the key sizes for ML-DSA and ML-KEM are larger than those of RSA or ECDSA, which can lead to
 increased memory usage and slower performance in constrained environments.
-Larger public keys, ciphertexts, and signatures also increase the data transmitted, which affects
-devices on low-power, low-bandwidth links, particularly multi-hop mesh networks, where fragmentation
-and retransmission add latency and energy cost. Algorithm selection for such environments is left
-to the relevant protocol specifications.
 
 {{artifact-size}} presents artifact sizes organized by NIST security categories published in
 the initial call for proposals {{NISTSecurityCategories}}. The security categories are defined
