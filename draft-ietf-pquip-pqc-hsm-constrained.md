@@ -217,7 +217,7 @@ In this document, "constrained device" is used as an umbrella term for two relat
 
 - constrained cryptographic modules with limited RAM, storage, or processing capacity, which may be embedded in hosts that are not themselves constrained.
 
-{{key-management}} apply mainly to constrained cryptographic modules, while {{sec-key-sizes}}, {{additional-considerations}}, {{sig-mem}}, {{sig-perf}} and {{firmware}} apply to both constrained nodes and modules as a whole.
+{{key-management}} applies mainly to constrained cryptographic modules, while {{sec-key-sizes}}, {{additional-considerations}}, {{sig-mem}}, {{sig-perf}} and {{firmware}} apply to both constrained nodes and modules as a whole.
 
 This document provides guidance and best practices for integrating PQC algorithms into constrained devices. It reviews strategies for key storage, ephemeral key management, and performance optimization tailored to low-resource environments. The document also examines ephemeral key generation in protocols such as TLS, along with techniques to optimize PQC signature operations within constrained cryptographic modules. It is intended for implementers of the constrained devices and cryptographic modules described above. It is also intended for vendors that integrate such modules from third parties, to help them determine which capabilities and optimizations to require from their suppliers.
 
